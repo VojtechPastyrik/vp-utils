@@ -5,8 +5,8 @@ import (
 	"github.com/spf13/cobra"
 	"log"
 	"os/exec"
-	"strconv"
 	"strings"
+	"time"
 )
 
 var Cmd = &cobra.Command{
@@ -20,19 +20,25 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	parent_cmd.Cmd.AddCommand(Cmd)
+	parent_cmd.Cmd.Add("clean-branches", Cmd) // Assuming parent_cmd.Cmd.Add is the correct way to add
 }
 
 func cleanBranches() {
-	removeMergedBranches()
-	log.Println("Old and merged branches removed successfully.")
-	removeOldBranches()
-	log.Println("Old branches removed successfully.")
-	removeBranchesWithoutUpstream()
-	log.Println("Branches without upstream removed successfully.")
+	log.Println("Starting branch cleanup...")
+	removedMerged := removeMergedBranches()
+	log.Printf("Removed %d merged branches.\n", removedMerged)
+
+	removedOld := removeOldBranches()
+	log.Printf("Removed %d old branches.\n", removedOld)
+
+	removedNoUpstream := removeBranchesWithoutUpstream()
+	log.Printf("Removed %d branches without upstream.\n", removedNoUpstream)
+
+	log.Println("Branch cleanup completed.")
 }
 
-func removeMergedBranches() {
+func removeMergedBranches() int {
+	var deletedCount int
 	out, err := exec.Command("git", "branch", "--merged", "main").Output()
 	if err != nil {
 		log.Fatalf("Error when getting merged branches: %v", err)
@@ -45,60 +51,90 @@ func removeMergedBranches() {
 		}
 		cmd := exec.Command("git", "branch", "-d", branch)
 		if err := cmd.Run(); err != nil {
-			log.Printf("Failed to delete branch %s: %v", branch, err)
+			log.Printf("Failed to delete merged branch '%s': %v", branch, err)
 		} else {
-			log.Printf("Deleted merged branch: %s", branch)
+			log.Printf("Successfully deleted merged branch: '%s'", branch)
+			deletedCount++
 		}
 	}
+	return deletedCount
 }
 
-func removeOldBranches() {
-	out, err := exec.Command("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short) %(committerdate:relative)", "refs/heads/").Output()
+func removeOldBranches() int {
+	var deletedCount int
+	// Get branches with their last commit date in ISO 8601 format
+	out, err := exec.Command("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)|%(committerdate:iso8601)", "refs/heads/").Output()
 	if err != nil {
-		log.Fatalf("Error when retrieving branches: %v", err)
+		log.Fatalf("Error when retrieving branches for old branch cleanup: %v", err)
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
+	sixMonthsAgo := time.Now().AddDate(0, -6, 0) // Calculate date 6 months ago
+
 	for _, line := range lines {
-		parts := strings.Fields(line)
-		if len(parts) < 2 {
-			continue
+		parts := strings.Split(line, "|")
+		if len(parts) != 2 {
+			continue // Skip malformed lines
 		}
 
 		branch := parts[0]
-		age := parts[1]
+		dateStr := parts[1]
+
+		// Skip main and master branches
+		if branch == "main" || branch == "master" {
+			continue
+		}
+
+		commitDate, err := time.Parse(time.RFC3339, dateStr)
+		if err != nil {
+			log.Printf("Failed to parse date for branch '%s': %v", branch, err)
+			continue
+		}
 
 		// Check if branch is older than 6 months
-		if strings.Contains(age, "month") {
-			months := strings.Split(age, " ")[0]
-			if monthsInt, err := strconv.Atoi(months); err == nil && monthsInt >= 6 {
-				cmd := exec.Command("git", "branch", "-d", branch)
-				if err := cmd.Run(); err != nil {
-					log.Printf("Failed to delete branch %s: %v", branch, err)
-				} else {
-					log.Printf("Deleted old branch: %s", branch)
-				}
+		if commitDate.Before(sixMonthsAgo) {
+			cmd := exec.Command("git", "branch", "-d", branch)
+			if err := cmd.Run(); err != nil {
+				log.Printf("Failed to delete old branch '%s': %v", branch, err)
+			} else {
+				log.Printf("Successfully deleted old branch: '%s'", branch)
+				deletedCount++
 			}
 		}
 	}
+	return deletedCount
 }
 
-func removeBranchesWithoutUpstream() {
+func removeBranchesWithoutUpstream() int {
+	var deletedCount int
 	out, err := exec.Command("git", "branch", "-vv").Output()
 	if err != nil {
-		log.Fatalf("Chyba při získávání větví: %v", err)
+		log.Fatalf("Error when getting branches to check for upstream: %v", err)
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(out)), "\n")
 	for _, line := range lines {
+		// Example output for a branch without upstream (or gone):
+		//   feature/my-branch    abcdefg [origin/feature/my-branch: gone] Some commit message
+		//   another-branch       abcdefg
 		if strings.Contains(line, ": gone") {
+			// Extract branch name (first field before whitespace)
 			branch := strings.Fields(line)[0]
+			branch = strings.TrimPrefix(branch, "* ") // Remove asterisk for current branch if present
+
+			// Skip main and master branches
+			if branch == "main" || branch == "master" {
+				continue
+			}
+
 			cmd := exec.Command("git", "branch", "-d", branch)
 			if err := cmd.Run(); err != nil {
-				log.Printf("Chyba při mazání větve %s: %v", branch, err)
+				log.Printf("Failed to delete branch without upstream '%s': %v", branch, err)
 			} else {
-				log.Printf("Větev bez upstreamu %s byla úspěšně smazána.", branch)
+				log.Printf("Successfully deleted branch without upstream: '%s'", branch)
+				deletedCount++
 			}
 		}
 	}
+	return deletedCount
 }
