@@ -11,7 +11,7 @@ import (
 var FlagContextName string
 
 var Cmd = &cobra.Command{
-	Use:     "remove-kubeconfig",
+	Use:     "remove-context",
 	Short:   "Remove context from kubeconfig",
 	Aliases: []string{"rc"},
 	Args:    cobra.NoArgs,
@@ -33,8 +33,8 @@ func init() {
 func removeContext(contextName string) {
 	cmd := exec.Command("kubectl", "config", "unset", "contexts."+contextName)
 	if err := cmd.Run(); err != nil {
-		log.Fatalf("Nepodařilo se odebrat kontext %s: %v", contextName, err)
+		log.Fatalf("Failed to remove context %s: %v", contextName, err)
 	} else {
-		log.Printf("Kontext %s byl úspěšně odebrán.", contextName)
+		log.Printf("Context %s was successfully removed.", contextName)
 	}
 }
