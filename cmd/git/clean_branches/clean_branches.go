@@ -20,7 +20,7 @@ var Cmd = &cobra.Command{
 }
 
 func init() {
-	parent_cmd.Cmd.Add("clean-branches", Cmd) // Assuming parent_cmd.Cmd.Add is the correct way to add
+	parent_cmd.Cmd.AddCommand(Cmd)
 }
 
 func cleanBranches() {
