@@ -3,6 +3,8 @@ package cmd
 import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/base64"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/base64/interactive_clipboard"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/git"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/git/clean_branches"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/jwt"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/jwt/parse"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
