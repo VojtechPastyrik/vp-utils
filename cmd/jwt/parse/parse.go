@@ -31,13 +31,13 @@ func init() {
 }
 
 func parseJWT(jwtToken string) {
-	// Rozdělení JWT na části (Header, Payload, Signature)
+	// JWT token should be in the format: Header.Payload.Signature
 	parts := strings.Split(jwtToken, ".")
 	if len(parts) != 3 {
 		log.Fatalf("Neplatný JWT token: očekávány 3 části, ale nalezeno %d", len(parts))
 	}
 
-	// Dekódování jednotlivých částí
+	// Decoding
 	headerJSON, err := jwtlib.DecodeSegment(parts[0])
 	if err != nil {
 		log.Fatalf("Chyba při dekódování Header: %v", err)
@@ -50,14 +50,14 @@ func parseJWT(jwtToken string) {
 
 	signature := parts[2]
 
-	// Připravení výsledku jako slice objektů
+	// Result creation as a slice of interfaces
 	result := []interface{}{
 		decodeJSON(headerJSON),
 		decodeJSON(claimsJSON),
 		signature,
 	}
 
-	// Výstup výsledku jako JSON
+	// Result output as JSON
 	outputJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
 		log.Fatal("Chyba při serializaci výsledku do JSON: ", err)
@@ -92,7 +92,7 @@ func decodeJSON(data []byte) interface{} {
 		log.Fatal("Error unmarshalling JSON: ", err)
 	}
 
-	// Procházení klíčů a detekce timestampů
+	// Object contains timestamps, format them
 	for key, value := range obj {
 		if timestamp, ok := value.(float64); ok && isTimestamp(timestamp) {
 			obj[key] = formatTimestamp(timestamp)
@@ -102,14 +102,15 @@ func decodeJSON(data []byte) interface{} {
 	return obj
 }
 
-// Kontrola, zda je hodnota timestamp
+// Check if the value is a valid timestamp
 func isTimestamp(value float64) bool {
 	// Timestamp by měl být větší než 0 a menší než aktuální čas + 100 let
 	now := time.Now().Unix()
 	return value > 0 && value < float64(now+100*365*24*60*60)
 }
 
-// Formátování timestampu na čitelný formát
+// Format timestampt to reader-friendly string
 func formatTimestamp(timestamp float64) string {
-	return time.Unix(int64(timestamp), 0).Format("2006-01-02 15:04:05")
+	loc := time.Now().Location()
+	return time.Unix(int64(timestamp), 0).In(loc).Format("2006-01-02 15:04:05")
 }
