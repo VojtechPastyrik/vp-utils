@@ -1,0 +1,46 @@
+version: 2
+project_name: vp-utils
+before:
+  hooks:
+    - rm -rf ./dist
+    - go mod tidy
+builds:
+  - binary: vpa-utils
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+
+release:
+  prerelease: auto
+
+universal_binaries:
+  - replace: true
+
+brews:
+  -
+    name: "{{ .ProjectName }}"
+    repository:
+        owner: VojtechPastyrik
+        name: homebrew-tap
+    homepage: "https://github.com/VojtechPastyrik/vp-utils"
+    url_template: "https://github.com/VojtechPastyrik/vp-utils/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    directory: Formula
+    caveats: "How to use this binary: https://github.com/VojtechPastyrik/vp-utils"
+    description: "Vojtech Pastyrik Utils"
+    install: |
+      bin.install "vp-utils"
+
+    test: |
+      system "#{bin}/vp-utils version"
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+  algorithm: sha256
