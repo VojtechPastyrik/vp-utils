@@ -7,6 +7,8 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/git/clean_branches"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/jwt"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/jwt/parse"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s/add_context"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault/init_unseal"
