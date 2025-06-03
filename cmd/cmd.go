@@ -13,6 +13,7 @@ import (
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls/parse"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls/parse_file"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault/init_unseal"
 	"github.com/spf13/cobra"
