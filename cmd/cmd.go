@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/api"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/api/load"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/base64"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/base64/interactive_clipboard"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/git"
