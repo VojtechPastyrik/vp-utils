@@ -11,6 +11,8 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s/add_context"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s/remove_context"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls/parse"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault/init_unseal"
 	"github.com/spf13/cobra"
