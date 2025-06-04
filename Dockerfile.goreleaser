@@ -1,0 +1,2 @@
+FROM debian:12-slim
+COPY vpa-utils /usr/local/bin
