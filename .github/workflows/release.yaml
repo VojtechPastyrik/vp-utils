@@ -39,3 +39,24 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
+      - name: Upload .deb to Cloudsmith
+        uses: cloudsmith-io/action@master
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          owner: vojtechpastyrik
+          command: "push"
+          format: "deb"
+          repo: vp-utils
+          distro: ubuntu
+          release: focal
+          file: vp-utils_*.deb
+      - name: Upload .rpm to Cloudsmith
+        uses: cloudsmith-io/action@master
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          owner: vojtechpastyrik
+          command: "push"
+          format: "rpm"
+          repo: vp-utils
+          distro: fedora
+          file: vp-utils_*.rpm

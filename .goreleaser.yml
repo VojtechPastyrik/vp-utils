@@ -92,3 +92,47 @@ changelog:
   filters:
     exclude:
       - '^VERSION'
+
+nfpms:
+  - id: vp-utils-deb
+    package_name: vp-utils
+    formats:
+      - deb
+    maintainer: "Vojtech Pastyrik <vojtech@pastyrik.dev>"
+    description: "Vojtech Pastyrik Utils"
+    homepage: "https://github.com/VojtechPastyrik/vp-utils"
+    license: "MIT"
+    vendor: "Vojtech Pastyrik"
+    section: "utils"
+    priority: "optional"
+    conflicts:
+      - vp-utils-old
+    replaces:
+      - vp-utils-old
+    provides:
+      - vp-utils
+    dependencies:
+      - libc6
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
+    bindir: /usr/bin
+  - id: vp-utils-rpm
+    package_name: vp-utils
+    formats:
+      - rpm
+    maintainer: "Vojtech Pastyrik <vojtech@pastyrik.dev>"
+    description: "Vojtech Pastyrik Utils"
+    homepage: "https://github.com/VojtechPastyrik/vp-utils"
+    license: "MIT"
+    vendor: "Vojtech Pastyrik"
+    section: "utils"
+    priority: "optional"
+    conflicts:
+      - vp-utils-old
+    replaces:
+      - vp-utils-old
+    provides:
+      - vp-utils
+    dependencies:
+      - libc6
+    file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.rpm"
+    bindir: /usr/bin
