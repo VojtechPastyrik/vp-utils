@@ -1,41 +1,29 @@
-package leaktest
+package info
 
 import (
 	"fmt"
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/memory"
+	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
-	"time"
 )
 
-var (
-	blockSize   int
-	iterations  int
-	sleepMillis int
-)
-
-var Cmd = &cobra.Command{
-	Use:   "leak-test",
-	Short: "Simulate a memory leak",
-	Long:  "Repeatedly allocates memory without releasing it, simulating a memory leak.",
+var SystemCmd = &cobra.Command{
+	Use:   "info",
+	Short: "Show system memory info",
+	Long:  "Displays memory statistics for the whole system.",
 	Run: func(cmd *cobra.Command, args []string) {
-		simulateLeak()
+		v, err := mem.VirtualMemory()
+		if err != nil {
+			fmt.Println("Error getting system memory info:", err)
+			return
+		}
+		fmt.Printf("Total: %.2f GB\n", float64(v.Total)/1024/1024/1024)
+		fmt.Printf("Used: %.2f GB\n", float64(v.Used)/1024/1024/1024)
+		fmt.Printf("Available: %.2f GB\n", float64(v.Available)/1024/1024/1024)
+		fmt.Printf("UsedPercent: %.2f%%\n", v.UsedPercent)
 	},
 }
 
 func init() {
-	Cmd.Flags().IntVarP(&blockSize, "block", "b", 1024*1024, "Block size in bytes")
-	Cmd.Flags().IntVarP(&iterations, "count", "c", 100, "Number of allocations")
-	Cmd.Flags().IntVarP(&sleepMillis, "sleep", "s", 100, "Delay between allocations (ms)")
-	parent_cmd.Cmd.AddCommand(Cmd)
-}
-
-func simulateLeak() {
-	fmt.Printf("Simulating memory leak: %d blocks of %d bytes\n", iterations, blockSize)
-	leaks := make([][]byte, 0, iterations)
-	for i := 0; i < iterations; i++ {
-		leaks = append(leaks, make([]byte, blockSize))
-		fmt.Printf("Allocated: %d MB\n", (i+1)*blockSize/1024/1024)
-		time.Sleep(time.Duration(sleepMillis) * time.Millisecond)
-	}
-	fmt.Println("Test finished. Memory was not released.")
+	parent_cmd.Cmd.AddCommand(SystemCmd)
 }
