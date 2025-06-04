@@ -7,6 +7,24 @@ MacOS:
 brew install VojtechPastyrik/tap/vp-utils
 ```
 
+Ubuntu/Debian:
+
+```
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/vojtechpastyrik/vp-utils/setup.deb.sh' \
+  | sudo -E bash
+sudo apt update
+sudo apt install vp-utils
+```
+
+Fedora:
+
+```
+curl -1sLf \
+  'https://dl.cloudsmith.io/public/vojtechpastyrik/vp-utils/setup.rpm.sh' \
+  | sudo -E bash
+sudo dnf install vp-utils
+```
 
 ## Release
 
