@@ -5,7 +5,7 @@ before:
     - rm -rf ./dist
     - go mod tidy
 builds:
-  - binary: vpa-utils
+  - binary: vp-utils
     goos:
       - linux
       - darwin
