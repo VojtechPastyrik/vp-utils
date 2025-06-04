@@ -49,7 +49,7 @@ dockers:
   - goos: linux
     goarch: amd64
     image_templates:
-      - "ghcr.io/vojtechpastyrik/vp-utils:{{ .Tag }}"
+      - "ghcr.io/VojtechPastyrik/vp-utils:{{ .Tag }}"
     dockerfile: Dockerfile.goreleaser
     ids:
       - vp-utils
@@ -59,17 +59,17 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/vojtechpastyrik/vp-utils"
+      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vp-utils"
       - "--label=org.label-schema.schema-version=1.0"
       - "--label=org.label-schema.version={{.Version}}"
       - "--label=org.label-schema.name={{.ProjectName}}"
       - "--label=com.github.actions.name={{.ProjectName}}"
-      - "--label=repository=https://github.com/vojtechpastyrik/vp-utils"
+      - "--label=repository=https://github.com/VojtechPastyrik/vp-utils"
       - "--label=maintainer=Vojtech Pastyrik <vojtech@pastyrik.dev>"
   - goos: linux
     goarch: arm64
     image_templates:
-      - "ghcr.io/vojtechpastyrik/vp-utils:{{ .Tag }}-arm64v8"
+      - "ghcr.io/VojtechPastyrik/vp-utils:{{ .Tag }}-arm64v8"
     dockerfile: Dockerfile.goreleaser.arm64v8
     ids:
       - vp-utils
@@ -79,12 +79,12 @@ dockers:
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/vojtechpastyrik/vp-utils"
+      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vp-utils"
       - "--label=org.label-schema.schema-version=1.0"
       - "--label=org.label-schema.version={{.Version}}"
       - "--label=org.label-schema.name={{.ProjectName}}"
       - "--label=com.github.actions.name={{.ProjectName}}"
-      - "--label=repository=https://github.com/vojtechpastyrik/vp-utils"
+      - "--label=repository=https://github.com/VojtechPastyrik/vp-utils"
       - "--label=maintainer=Vojtech Pastyrik <vojtech@pastyrik.dev>"
 
 
