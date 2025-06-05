@@ -19,13 +19,13 @@ var FlagKeyShares int
 var FlagKeyThreshold int
 
 var Cmd = &cobra.Command{
-	Use:   "vault-init-unseal",
+	Use:   "init-unseal",
 	Short: "Initialize and unseal Vault",
 	Long: `This command initializes Vault and unseals it using the generated keys.
 It requires a running Vault instance in the specified namespace and saves the keys to the specified path.`,
 	Example: `vp vault init-unseal --path /path/to/save/keys --namespace vault`,
 	Args:    cobra.NoArgs,
-	Aliases: []string{"viu"},
+	Aliases: []string{"iu"},
 	Run: func(cmd *cobra.Command, args []string) {
 		vaultInitUnseal(FlagPath, FlagNamespace, FlagKeyShares, FlagKeyThreshold)
 	},
