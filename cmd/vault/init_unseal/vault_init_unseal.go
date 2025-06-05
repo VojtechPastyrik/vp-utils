@@ -2,12 +2,12 @@ package init_unseal
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/vault"
 	"github.com/spf13/cobra"
@@ -15,12 +15,19 @@ import (
 
 var FlagPath string
 var FlagNamespace string
+var FlagKeyShares int
+var FlagKeyThreshold int
 
 var Cmd = &cobra.Command{
 	Use:   "vault-init-unseal",
-	Short: "",
+	Short: "Initialize and unseal Vault",
+	Long: `This command initializes Vault and unseals it using the generated keys.
+It requires a running Vault instance in the specified namespace and saves the keys to the specified path.`,
+	Example: `vp vault init-unseal --path /path/to/save/keys --namespace vault`,
+	Args:    cobra.NoArgs,
+	Aliases: []string{"viu"},
 	Run: func(cmd *cobra.Command, args []string) {
-		vaultInitUnseal(FlagPath, FlagNamespace)
+		vaultInitUnseal(FlagPath, FlagNamespace, FlagKeyShares, FlagKeyThreshold)
 	},
 }
 
@@ -42,14 +49,35 @@ func init() {
 		"vault",
 		"Namespace where Vault is running",
 	)
+	Cmd.Flags().IntVarP(
+		&FlagKeyShares,
+		"key-shares",
+		"s",
+		5,
+		"Number of key shares to generate during Vault initialization",
+	)
+	Cmd.Flags().IntVarP(
+		&FlagKeyThreshold,
+		"key-threshold",
+		"t",
+		3,
+		"Number of key shares required to unseal Vault",
+	)
 }
 
-func vaultInitUnseal(path string, namespace string) {
+func vaultInitUnseal(path, namespace string, keyShares, keyThreshold int) {
+	if keyShares < 1 || keyThreshold < 1 {
+		log.Fatalf("Key shares and threshold must be greater than 0")
+	}
+	if keyThreshold > keyShares {
+		log.Fatalf("Key threshold cannot be greater than key shares")
+	}
+
 	podNames := getPods(namespace)
 	if len(podNames) == 0 {
 		log.Fatalf("No Vault pods found in namespace %s", namespace)
 	}
-	vaultKeys := vaultInit(podNames[0], path, namespace)
+	vaultKeys := vaultInit(podNames[0], path, namespace, keyShares, keyThreshold)
 
 	extractedValueKeys, treshold := extractVaultKeys(vaultKeys)
 
@@ -80,9 +108,9 @@ func getPods(namespace string) []string {
 	return podNames
 }
 
-func vaultInit(pod, path, namespace string) string {
+func vaultInit(pod, path, namespace string, keyShares, keyThreshold int) string {
 	log.Printf("Executing vault init on pod %s in namespace %s\n", pod, namespace)
-	cmd := exec.Command("kubectl", "exec", pod, "-n", namespace, "--", "vault", "operator", "init", "-format=json")
+	cmd := exec.Command("kubectl", "exec", pod, "-n", namespace, "--", "vault", "operator", "init", "-format=json", "-key-shares", fmt.Sprintf("%d", keyShares), "-key-threshold", fmt.Sprintf("%d", keyThreshold))
 	cmd.Env = os.Environ()
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -124,25 +152,15 @@ func unsealPod(podName, namespace string, vaultKeys []string, treshold int) {
 		if err != nil {
 			log.Fatalf("Error unsealing pod %s with key %s: %v\nOutput: %s", podName, key, err, output)
 		}
-		waitForPodReady(podName, namespace)
 	}
+	waitForPodReady(podName, namespace)
 }
 
 func waitForPodReady(pod, namespace string) {
-	for {
-		cmd := exec.Command("kubectl", "get", "pod", pod, "-n", namespace, "-o", "jsonpath={.status.phase}")
-		cmd.Env = os.Environ()
-		output, err := cmd.Output()
-		if err != nil {
-			log.Fatalf("Error checking pod status: %v", err)
-		}
-
-		status := strings.TrimSpace(string(output))
-		if status == "Running" {
-			break
-		}
-
-		log.Printf("Waiting for pod %s to be ready (current status: %s)\n", pod, status)
-		time.Sleep(1 * time.Second)
+	cmd := exec.Command("kubectl", "wait", "pod", pod, "-n", namespace, "--for=condition=Ready", "--timeout=60s")
+	cmd.Env = os.Environ()
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		log.Fatalf("Error waiting for pod to be ready: %v\nOutput: %s", err, output)
 	}
 }
