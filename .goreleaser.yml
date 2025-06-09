@@ -50,6 +50,7 @@ dockers:
     goarch: amd64
     image_templates:
       - "vojtechpastyrik/vp-utils:{{ .Tag }}"
+      - "vojtechpastyrik/vp-utils:latest"
     dockerfile: Dockerfile.goreleaser
     ids:
       - vp-utils
@@ -70,6 +71,7 @@ dockers:
     goarch: arm64
     image_templates:
       - "vojtechpastyrik/vp-utils:{{ .Tag }}-arm64v8"
+      - "vojtechpastyrik/vp-utils:latest-arm64v8"
     dockerfile: Dockerfile.goreleaser.arm64v8
     ids:
       - vp-utils
