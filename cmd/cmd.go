@@ -10,6 +10,7 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/cpu/info"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/cpu/load"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/cpu/stress"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/generate_docs"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/git"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/git/clean_branches"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/git/reauthor_commit"
