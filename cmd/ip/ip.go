@@ -6,6 +6,7 @@ import (
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	"github.com/spf13/cobra"
 	"io"
+	"net"
 	"net/http"
 )
 
@@ -20,6 +21,14 @@ var Cmd = &cobra.Command{
 		}
 
 		fmt.Printf("🌐 IP Address: %s\n", info.IP)
+
+		ipv4, ipv6, err := getLocalIPs()
+		if ipv4 != "" {
+			fmt.Printf("🌐 Local IPv4 Address: %s\n", ipv4)
+		}
+		if ipv6 != "" {
+			fmt.Printf("🌐 Local IPv6 Address: %s\n", ipv6)
+		}
 		fmt.Printf("🌍 Country: %s\n", info.Country)
 		fmt.Printf("🏙️ City: %s\n", info.City)
 		fmt.Printf("🏢 ISP: %s\n", info.Org)
@@ -50,4 +59,21 @@ func fetchIPInfo() (*IPInfo, error) {
 		return nil, err
 	}
 	return &info, nil
+}
+
+func getLocalIPs() (ipv4, ipv6 string, err error) {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", "", err
+	}
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil && ipv4 == "" {
+				ipv4 = ipnet.IP.String()
+			} else if ipnet.IP.To16() != nil && ipnet.IP.To4() == nil && ipv6 == "" {
+				ipv6 = ipnet.IP.String()
+			}
+		}
+	}
+	return
 }
