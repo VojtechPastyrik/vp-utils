@@ -11,7 +11,7 @@ import (
 var FlagDecode bool
 
 var Cmd = &cobra.Command{
-	Use:   "base64",
+	Use:   "base64 [flags] <string>",
 	Short: "Base64 Utils",
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
