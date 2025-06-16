@@ -3,6 +3,8 @@ module github.com/VojtechPastyrik/vp-utils
 go 1.24
 
 require (
+	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/atotto/clipboard v0.1.4
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/shirou/gopsutil/v3 v3.24.5
@@ -12,10 +14,21 @@ require (
 )
 
 require (
+	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest v0.11.28 // indirect
+	github.com/Azure/go-autorest/autorest/adal v0.9.22 // indirect
+	github.com/Azure/go-autorest/autorest/azure/cli v0.4.6 // indirect
+	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
+	github.com/Azure/go-autorest/autorest/to v0.4.1 // indirect
+	github.com/Azure/go-autorest/autorest/validation v0.3.2 // indirect
+	github.com/Azure/go-autorest/logger v0.2.1 // indirect
+	github.com/Azure/go-autorest/tracing v0.6.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.6 // indirect
+	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/lufia/plan9stats v0.0.0-20250317134145-8bc96cf8fc35 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
