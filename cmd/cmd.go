@@ -21,6 +21,7 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/jwt/parse"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s/add_context"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s/ingress"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/k8s/remove_context"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/memory"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/memory/allocpatterns"
