@@ -41,6 +41,11 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
+      - name: Upload Linux binary only
+        uses: actions/upload-artifact@v4
+        with:
+          name: vp-utils-binaries
+          path: ./dist/vp-utils_linux_amd64_v1/vp-utils
       - name: Upload .deb via Cloudsmith CLI
         run: |
           for f in dist/vp-utils_*.deb; do
@@ -56,3 +61,35 @@ jobs:
           done
         env:
           CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+  docs-and-gitlab:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: vp-utils-binaries
+          path: ./binary
+
+      - name: Generate Documentation
+        run: |
+          chmod +x ./binary/vp-utils
+          ./binary/vp-utils generate-docs
+
+      - name: Push to GitLab
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git clone https://oauth2:${GITLAB_TOKEN}@gitlab.com/pastyrik.dev/doc.git gitlab-repo
+          cp -r ./cobra-docs/* ./gitlab-repo/docs/cli/commands/
+          cd gitlab-repo
+          git add .
+          git commit -m "chore(docs/cli/commands): Update cli documentation for version ${GITHUB_REF_NAME}" || echo "No changes to commit"
+          git push
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
