@@ -34,6 +34,8 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls/parse_file"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/vault/init_unseal"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/youtrack"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/youtrack/track_time"
 	"github.com/spf13/cobra"
 )
 
