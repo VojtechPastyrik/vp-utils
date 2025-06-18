@@ -8,26 +8,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var FlagContextName string
-
 var Cmd = &cobra.Command{
-	Use:     "remove-context",
+	Use:     "remove-context <name>",
 	Short:   "Remove context from kubeconfig",
 	Aliases: []string{"rc"},
-	Args:    cobra.NoArgs,
+	Args:    cobra.ExactArgs(1),
 	Run: func(c *cobra.Command, args []string) {
-		removeContext(FlagContextName)
+		contextName := args[0]
+		removeContext(contextName)
 	},
 }
 
 func init() {
 	parent_cmd.Cmd.AddCommand(Cmd)
-	Cmd.Flags().StringVarP(
-		&FlagContextName, "context-name",
-		"c",
-		"",
-		"Context name")
-	Cmd.MarkFlagRequired("context-name")
 }
 
 func removeContext(contextName string) {
