@@ -13,7 +13,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	golang.org/x/oauth2 v0.30.0
 	k8s.io/api v0.33.1
-	k8s.io/apimachinery v0.33.1
+	k8s.io/apimachinery v0.33.2
 	k8s.io/client-go v0.33.1
 	software.sslmate.com/src/go-pkcs12 v0.5.0
 )
