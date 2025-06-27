@@ -34,18 +34,18 @@ func parseJWT(jwtToken string) {
 	// JWT token should be in the format: Header.Payload.Signature
 	parts := strings.Split(jwtToken, ".")
 	if len(parts) != 3 {
-		log.Fatalf("Neplatný JWT token: očekávány 3 části, ale nalezeno %d", len(parts))
+		log.Fatalf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
 	}
 
 	// Decoding
 	headerJSON, err := jwtlib.DecodeSegment(parts[0])
 	if err != nil {
-		log.Fatalf("Chyba při dekódování Header: %v", err)
+		log.Fatalf("Error decoding Header %v", err)
 	}
 
 	claimsJSON, err := jwtlib.DecodeSegment(parts[1])
 	if err != nil {
-		log.Fatalf("Chyba při dekódování Claims: %v", err)
+		log.Fatalf("Error decoding Claims: %v", err)
 	}
 
 	signature := parts[2]
@@ -60,7 +60,7 @@ func parseJWT(jwtToken string) {
 	// Result output as JSON
 	outputJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
-		log.Fatal("Chyba při serializaci výsledku do JSON: ", err)
+		log.Fatal("Error serializing result into JSON: ", err)
 	}
 	fmt.Println(string(outputJSON))
 }
@@ -104,7 +104,7 @@ func decodeJSON(data []byte) interface{} {
 
 // Check if the value is a valid timestamp
 func isTimestamp(value float64) bool {
-	// Timestamp by měl být větší než 0 a menší než aktuální čas + 100 let
+	// The timestamp should be greater than 0 and less than the current time + 100 years
 	now := time.Now().Unix()
 	return value > 0 && value < float64(now+100*365*24*60*60)
 }
