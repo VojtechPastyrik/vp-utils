@@ -32,6 +32,7 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/mock_http_server"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq/function"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq/load"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq/put_message"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq/read_queue"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/release"
