@@ -29,6 +29,8 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/memory/info"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/memory/leaktest"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/memory/load"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq/function"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls/generate_cert"
