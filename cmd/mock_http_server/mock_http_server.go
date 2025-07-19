@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	"github.com/VojtechPastyrik/vp-utils/version"
 	"github.com/dop251/goja"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -184,6 +185,10 @@ func runMockHTTPServer(port int, configPath string) {
 		}).Methods(route.Method)
 
 	}
+
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "[vp-utils "+version.Version+"] Hello from Mock server! You can access the configured routes.\n")
+	})
 
 	log.Println("Mock server listening on :" + portStr)
 	log.Fatal(http.ListenAndServe(":"+portStr, r))
