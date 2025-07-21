@@ -2,9 +2,11 @@ package mock_http_server
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	"github.com/VojtechPastyrik/vp-utils/version"
+	jwtlib "github.com/dgrijalva/jwt-go"
 	"github.com/dop251/goja"
 	"github.com/gorilla/mux"
 	"github.com/spf13/cobra"
@@ -15,6 +17,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 )
 
 var FlagConfigPath string
@@ -47,6 +51,24 @@ type Config struct {
 	Routes []Route `yaml:"routes"`
 }
 
+type AuthType string
+
+const (
+	AuthTypeBearer AuthType = "oauth2"
+	AuthTypeBasic  AuthType = "basic"
+)
+
+type User struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+type Auth struct {
+	Type   AuthType          `yaml:"type"`
+	Users  []User            `yaml:"users"`
+	Claims map[string]string `yaml:"claims"`
+}
+
 type Route struct {
 	Path                string `yaml:"path"`
 	Method              string `yaml:"method"`
@@ -54,6 +76,7 @@ type Route struct {
 	ResponseContentType string `yaml:"responseContentType"`
 	ResponseCode        int    `yaml:"responseCode"`
 	Script              string `yaml:"script"`
+	Auth                Auth   `yaml:"auth"`
 }
 
 type Ctx struct {
@@ -86,10 +109,20 @@ func (c *Ctx) SetResponse(status int, body string) {
 func generateConfigExample() {
 	exampleConfig := Config{
 		Routes: []Route{
-			{Path: "/api/v1/resource", Method: "GET", Response: `{"message": "Hello, World!"}`, ResponseCode: 200},
+			{Path: "/api/v1/resource", Method: "GET", Response: `{"message": "Hello, World!"}`, ResponseCode: 200, Auth: Auth{Type: AuthTypeBearer, Claims: map[string]string{
+				"sub":  "1234567890",
+				"name": "John Doe",
+			}}},
 			{
 				Path:   "/api/v1/resource",
 				Method: "POST",
+				Auth: Auth{
+					Type: AuthTypeBasic,
+					Users: []User{
+						{Username: "user1", Password: "password1"},
+						{Username: "user2", Password: "password2"},
+					},
+				},
 				Script: `
 var payloadString = ctx.getPayload();
 log(payloadString);
@@ -127,8 +160,15 @@ func runMockHTTPServer(port int, configPath string) {
 	}
 
 	r := mux.NewRouter()
+	r.Use(AuthMiddleware(cfg.Routes))
+
 	for _, route := range cfg.Routes {
 		log.Println("Setting up route:", route.Path, "with method:", route.Method)
+
+		if route.Auth.Type != AuthTypeBearer && route.Auth.Type != AuthTypeBasic {
+			log.Fatalf("Invalid auth type: %v. Possible values are: [%s , %s]", route.Auth.Type, AuthTypeBearer, AuthTypeBasic)
+		}
+
 		r.HandleFunc(route.Path, func(w http.ResponseWriter, r *http.Request) {
 			tracingId := uuid.NewUUID()
 			if r.Method != route.Method {
@@ -143,7 +183,7 @@ func runMockHTTPServer(port int, configPath string) {
 			}
 
 			bodyBytes, _ := io.ReadAll(r.Body)
-			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Obnoví r.Body pro další čtení
+			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Reset the body so it can be read again later
 			body := string(bodyBytes)
 			log.Println("[", tracingId, "] Received request:", r.Method, r.URL.Path, "with body:", body, "from", r.RemoteAddr)
 
@@ -192,4 +232,76 @@ func runMockHTTPServer(port int, configPath string) {
 
 	log.Println("Mock server listening on :" + portStr)
 	log.Fatal(http.ListenAndServe(":"+portStr, r))
+}
+
+func AuthMiddleware(routes []Route) mux.MiddlewareFunc {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for _, route := range routes {
+				if route.Path == r.URL.Path && route.Method == r.Method {
+					if route.Auth.Type == AuthTypeBearer {
+						token := r.Header.Get("Authorization")
+						if token == "" || !validateJwtToken(token, route.Auth.Claims) {
+							http.Error(w, "Unauthorized", http.StatusUnauthorized)
+							return
+						}
+					} else if route.Auth.Type == AuthTypeBasic {
+						username, password, ok := r.BasicAuth()
+						if !ok || !validateBasicAuth(username, password, route.Auth.Users) {
+							http.Error(w, "Unauthorized", http.StatusUnauthorized)
+							return
+						}
+					}
+				}
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func validateBasicAuth(username, password string, users []User) bool {
+	for _, user := range users {
+		if user.Username == username && user.Password == password {
+			return true
+		}
+	}
+	return false
+}
+
+func validateJwtToken(token string, claims map[string]string) bool {
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		log.Fatalf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
+	}
+
+	claimsJSON, err := jwtlib.DecodeSegment(parts[1])
+	if err != nil {
+		log.Fatalf("Error decoding Claims: %v", err)
+	}
+
+	var claimsMap map[string]interface{}
+	if err := json.Unmarshal(claimsJSON, &claimsMap); err != nil {
+		log.Fatalf("Error unmarshalling claims JSON: %v", err)
+	}
+
+	// Check if the 'exp' claim exists and is a valid timestamp
+	if exp, ok := claimsMap["exp"].(float64); ok {
+		if int64(exp) < time.Now().Unix() {
+			log.Printf("JWT token has expired. Exp: %d, Now: %d", int64(exp), time.Now().Unix())
+			return false
+		}
+	} else {
+		log.Printf("JWT token does not contain 'exp' claim")
+		return false
+	}
+
+	// Check if the claims map contains the required claims
+	for key, value := range claims {
+		if claimsMap[key] != value {
+			log.Printf("JWT token does not contain required claim: %s with value: %s", key, value)
+			return false
+		}
+	}
+
+	return true
 }
