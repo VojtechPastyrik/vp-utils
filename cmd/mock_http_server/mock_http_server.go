@@ -272,16 +272,19 @@ func validateJwtToken(token string, claims map[string]string) bool {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
 		log.Printf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
+		return false
 	}
 
 	claimsJSON, err := jwtlib.DecodeSegment(parts[1])
 	if err != nil {
 		log.Printf("Error decoding Claims: %v", err)
+		return false
 	}
 
 	var claimsMap map[string]interface{}
 	if err := json.Unmarshal(claimsJSON, &claimsMap); err != nil {
 		log.Printf("Error unmarshalling claims JSON: %v", err)
+		return false
 	}
 
 	// Check if the 'exp' claim exists and is a valid timestamp
