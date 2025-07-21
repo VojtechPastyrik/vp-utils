@@ -271,17 +271,17 @@ func validateBasicAuth(username, password string, users []User) bool {
 func validateJwtToken(token string, claims map[string]string) bool {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		log.Fatalf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
+		log.Printf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
 	}
 
 	claimsJSON, err := jwtlib.DecodeSegment(parts[1])
 	if err != nil {
-		log.Fatalf("Error decoding Claims: %v", err)
+		log.Printf("Error decoding Claims: %v", err)
 	}
 
 	var claimsMap map[string]interface{}
 	if err := json.Unmarshal(claimsJSON, &claimsMap); err != nil {
-		log.Fatalf("Error unmarshalling claims JSON: %v", err)
+		log.Printf("Error unmarshalling claims JSON: %v", err)
 	}
 
 	// Check if the 'exp' claim exists and is a valid timestamp
