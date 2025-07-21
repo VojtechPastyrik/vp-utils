@@ -8,8 +8,19 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v5
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24.0
+
+      - name: Install dependencies
+        run: |
+          go mod tidy
+          go mod download
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
