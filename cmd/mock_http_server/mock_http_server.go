@@ -101,6 +101,11 @@ func (c *Ctx) SetHeader(key, value string) {
 	c.Response.Header().Set(key, value)
 }
 
+func (c *Ctx) GetURLParam(key string) string {
+	vars := mux.Vars(c.Request)
+	return vars[key]
+}
+
 func (c *Ctx) SetResponse(status int, body string) {
 	c.Response.WriteHeader(status)
 	c.Response.Write([]byte(body))
@@ -165,7 +170,7 @@ func runMockHTTPServer(port int, configPath string) {
 	for _, route := range cfg.Routes {
 		log.Println("Setting up route:", route.Path, "with method:", route.Method)
 
-		if route.Auth.Type != AuthTypeBearer && route.Auth.Type != AuthTypeBasic {
+		if route.Auth.Type != "" && route.Auth.Type != AuthTypeBearer && route.Auth.Type != AuthTypeBasic {
 			log.Fatalf("Invalid auth type: %v. Possible values are: [%s , %s]", route.Auth.Type, AuthTypeBearer, AuthTypeBasic)
 		}
 
@@ -209,6 +214,7 @@ func runMockHTTPServer(port int, configPath string) {
 				"setHeader":   ctx.SetHeader,
 				"setResponse": ctx.SetResponse,
 				"getHeader":   ctx.GetHeader,
+				"getURLParam": ctx.GetURLParam,
 			})
 			vm.Set("log", func(msg string) {
 				log.Println("[", tracingId, "] JS log: ", msg)
@@ -238,7 +244,10 @@ func AuthMiddleware(routes []Route) mux.MiddlewareFunc {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			for _, route := range routes {
-				if route.Path == r.URL.Path && route.Method == r.Method {
+				router := mux.NewRouter()
+				router.HandleFunc(route.Path, func(http.ResponseWriter, *http.Request) {}).Methods(route.Method)
+				match := router.Match(r, &mux.RouteMatch{})
+				if match {
 					if route.Auth.Type == AuthTypeBearer {
 						token := r.Header.Get("Authorization")
 						if token == "" || !validateJwtToken(token, route.Auth.Claims) {
