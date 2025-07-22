@@ -9,6 +9,8 @@ import (
 	"github.com/dop251/goja"
 	jwtlib "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"io"
@@ -45,6 +47,7 @@ func init() {
 	Cmd.Flags().StringVarP(&FlagConfigPath, "config", "c", "", "Path to the configuration file for the mock HTTP server")
 	Cmd.Flags().BoolVarP(&FlagFetExampleConfig, "example-config", "e", false, "Fetch example configuration for the mock HTTP server")
 	Cmd.Flags().IntVarP(&FlagPort, "port", "p", 8080, "Port on which the mock HTTP server will run")
+	prometheus.MustRegister(httpRequestsTotal, httpRequestDuration)
 }
 
 type Config struct {
@@ -111,6 +114,26 @@ func (c *Ctx) SetResponse(status int, body string) {
 	c.Response.Write([]byte(body))
 }
 
+// Prometheus metrics
+var (
+	httpRequestsTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "http_requests_total",
+			Help: "Total HTTP requests processed, labeled by route and status code",
+		},
+		[]string{"route", "status"},
+	)
+
+	httpRequestDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "http_request_duration_seconds",
+			Help:    "Duration of HTTP requests in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"route"},
+	)
+)
+
 func generateConfigExample() {
 	exampleConfig := Config{
 		Routes: []Route{
@@ -165,7 +188,10 @@ func runMockHTTPServer(port int, configPath string) {
 	}
 
 	r := mux.NewRouter()
+	// Auth middleware
 	r.Use(AuthMiddleware(cfg.Routes))
+	// Metrics middleware
+	r.Use(MetricsMiddleware)
 
 	for _, route := range cfg.Routes {
 		log.Println("Setting up route:", route.Path, "with method:", route.Method)
@@ -235,6 +261,11 @@ func runMockHTTPServer(port int, configPath string) {
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "[vp-utils "+version.Version+"] Hello from Mock server! You can access the configured routes.\n")
 	})
+
+	go func() {
+		log.Println("Prometheus metrics available at /metrics")
+		log.Fatal(http.ListenAndServe(":8090", promhttp.Handler()))
+	}()
 
 	log.Println("Mock server listening on :" + portStr)
 	log.Fatal(http.ListenAndServe(":"+portStr, r))
@@ -316,4 +347,38 @@ func validateJwtToken(token string, claims map[string]string) bool {
 	}
 
 	return true
+}
+
+func MetricsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+
+		// Get the current route and its path
+		route := mux.CurrentRoute(r)
+		routePath, _ := route.GetPathTemplate()
+
+		// Increment the total HTTP requests counter
+		httpRequestsTotal.WithLabelValues(routePath, strconv.Itoa(http.StatusOK)).Inc()
+
+		// Call the next handler in the chain
+		next.ServeHTTP(rw, r)
+
+		// Measure the duration of the request
+		duration := time.Since(start).Seconds()
+		httpRequestsTotal.WithLabelValues(routePath, strconv.Itoa(rw.statusCode)).Inc()
+		httpRequestDuration.WithLabelValues(routePath).Observe(duration)
+	})
+}
+
+// ResponseWriter is a custom http.ResponseWriter that captures the status code
+type responseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *responseWriter) WriteHeader(code int) {
+	rw.statusCode = code
+	rw.ResponseWriter.WriteHeader(code)
 }
