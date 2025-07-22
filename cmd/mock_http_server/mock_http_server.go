@@ -359,16 +359,15 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 		route := mux.CurrentRoute(r)
 		routePath, _ := route.GetPathTemplate()
 
-		// Increment the total HTTP requests counter
-		httpRequestsTotal.WithLabelValues(routePath, strconv.Itoa(http.StatusOK)).Inc()
-
 		// Call the next handler in the chain
 		next.ServeHTTP(rw, r)
 
 		// Measure the duration of the request
 		duration := time.Since(start).Seconds()
-		httpRequestsTotal.WithLabelValues(routePath, strconv.Itoa(rw.statusCode)).Inc()
 		httpRequestDuration.WithLabelValues(routePath).Observe(duration)
+
+		// Log request total with route path and status code
+		httpRequestsTotal.WithLabelValues(routePath, strconv.Itoa(rw.statusCode)).Inc()
 	})
 }
 
