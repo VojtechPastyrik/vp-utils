@@ -32,6 +32,7 @@ import (
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/mock_http_server"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq/function"
+	_ "github.com/VojtechPastyrik/vp-utils/cmd/release"
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls"
 	_ "github.com/VojtechPastyrik/vp-utils/cmd/tls/generate_cert"
