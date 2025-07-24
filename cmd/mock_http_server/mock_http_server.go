@@ -28,7 +28,7 @@ var FlagFetExampleConfig bool
 var FlagPort int
 
 var Cmd = &cobra.Command{
-	Use:   "mock_http_server",
+	Use:   "mock-http-server",
 	Short: "Mock HTTP Server",
 	Long:  "A simple mock HTTP server for testing purposes.It can be used to simulate API responses and test client applications without needing a real backend.",
 
