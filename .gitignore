@@ -18,6 +18,8 @@ vendor/
 # Go workspace file
 go.work
 go.work.sum
+go.sum
+
 
 # IDE/editor files
 .idea/
@@ -27,3 +29,7 @@ go.work.sum
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Binary files
+vp-utils
+main
