@@ -4,6 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	"github.com/VojtechPastyrik/vp-utils/version"
 	"github.com/dop251/goja"
@@ -13,14 +21,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
-	"io"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"log"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 var FlagConfigPath string
@@ -225,7 +226,8 @@ func runMockHTTPServer(port int, configPath string) {
 				return
 			}
 
-			ctx := &Ctx{Request: r, Response: w}
+			rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+			ctx := &Ctx{Request: r, Response: rw}
 			vm := goja.New()
 			vm.Set("ctx", map[string]interface{}{
 				"getPayload": func() string {
@@ -253,7 +255,7 @@ func runMockHTTPServer(port int, configPath string) {
 				return
 			}
 
-			log.Println("[", tracingId, "] Response", route.Path, "with code", route.ResponseCode, "and body", route.Response)
+			log.Println("[", tracingId, "] Response", route.Path, "with code", rw.statusCode, "and body", rw.body.String())
 		}).Methods(route.Method)
 
 	}
@@ -375,9 +377,15 @@ func MetricsMiddleware(next http.Handler) http.Handler {
 type responseWriter struct {
 	http.ResponseWriter
 	statusCode int
+	body       bytes.Buffer
 }
 
 func (rw *responseWriter) WriteHeader(code int) {
 	rw.statusCode = code
 	rw.ResponseWriter.WriteHeader(code)
+}
+
+func (rw *responseWriter) Write(b []byte) (int, error) {
+	rw.body.Write(b)
+	return rw.ResponseWriter.Write(b)
 }
