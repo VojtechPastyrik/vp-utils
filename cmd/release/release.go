@@ -2,16 +2,18 @@ package release
 
 import (
 	"fmt"
+	"os/exec"
+
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
 	version "github.com/VojtechPastyrik/vp-utils/version"
 	git "github.com/go-git/go-git/v5"
-	"os/exec"
 
-	"github.com/spf13/cobra"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 var Cmd = &cobra.Command{
@@ -34,7 +36,7 @@ func releaseProject() {
 
 	writeNewVersionFile(version)
 
-	splitVersion := strings.Split(strings.TrimSuffix(version, "v"), ".")
+	splitVersion := strings.Split(strings.TrimPrefix(version, "v"), ".")
 	minorVersion, _ := strconv.Atoi(splitVersion[1])
 	minorVersion++
 	newVersion := fmt.Sprintf("v%s.%d.%s-dev", splitVersion[0], minorVersion, splitVersion[2])
