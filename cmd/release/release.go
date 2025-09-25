@@ -5,7 +5,6 @@ import (
 	"os/exec"
 
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	version "github.com/VojtechPastyrik/vp-utils/version"
 	git "github.com/go-git/go-git/v5"
 
 	"log"
@@ -31,7 +30,7 @@ func init() {
 }
 
 func releaseProject() {
-	version := version.Version
+	version := getVersionFromFile()
 	version = strings.TrimSuffix(version, "-dev")
 
 	writeNewVersionFile(version)
@@ -109,4 +108,23 @@ var Version string = "%s"`, version)
 		log.Fatalf("Error writing new version file: %v\n", err)
 	}
 
+}
+
+func getVersionFromFile() string {
+	data, err := os.ReadFile("version/version.go")
+	if err != nil {
+		log.Fatalf("Error reading version file: %v\n", err)
+	}
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "var Version string") {
+			parts := strings.Split(line, "=")
+			if len(parts) == 2 {
+				return strings.Trim(strings.TrimSpace(parts[1]), `"`)
+			}
+		}
+	}
+	log.Fatalf("Version not found in version.go")
+	return ""
 }
