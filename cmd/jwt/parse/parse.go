@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/jwt"
-	jwtlib "github.com/golang-jwt/jwt/v4"
-	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"strings"
 	"time"
+
+	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/jwt"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	jwtlib "github.com/golang-jwt/jwt/v4"
+	"github.com/spf13/cobra"
 )
 
 var Cmd = &cobra.Command{
@@ -34,18 +35,18 @@ func parseJWT(jwtToken string) {
 	// JWT token should be in the format: Header.Payload.Signature
 	parts := strings.Split(jwtToken, ".")
 	if len(parts) != 3 {
-		log.Fatalf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
+		logger.Fatalf("invalid JWT token: expected 3 parts, but found %d", len(parts))
 	}
 
 	// Decoding
 	headerJSON, err := jwtlib.DecodeSegment(parts[0])
 	if err != nil {
-		log.Fatalf("Error decoding Header %v", err)
+		logger.Fatalf("error decoding header %v", err)
 	}
 
 	claimsJSON, err := jwtlib.DecodeSegment(parts[1])
 	if err != nil {
-		log.Fatalf("Error decoding Claims: %v", err)
+		logger.Fatalf("error decoding claims: %v", err)
 	}
 
 	signature := parts[2]
@@ -60,7 +61,7 @@ func parseJWT(jwtToken string) {
 	// Result output as JSON
 	outputJSON, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {
-		log.Fatal("Error serializing result into JSON: ", err)
+		logger.Fatal("error serializing result into JSON: ", err)
 	}
 	fmt.Println(string(outputJSON))
 }
@@ -69,7 +70,7 @@ func readFromPipe() string {
 	// Ensure input is from a pipe
 	fi, err := os.Stdin.Stat()
 	if err != nil || fi.Mode()&os.ModeNamedPipe == 0 {
-		log.Fatalln("No input from pipe.")
+		logger.Fatal("no input from pipe.")
 	}
 
 	// Read the input from stdin (pipe)
@@ -80,7 +81,7 @@ func readFromPipe() string {
 
 	// Handle errors during scanning
 	if err := scanner.Err(); err != nil {
-		log.Fatal("Error reading from stdin: ", err)
+		logger.Fatal("error reading from stdin: ", err)
 	}
 
 	return ""
@@ -89,7 +90,7 @@ func readFromPipe() string {
 func decodeJSON(data []byte) interface{} {
 	var obj map[string]interface{}
 	if err := json.Unmarshal(data, &obj); err != nil {
-		log.Fatal("Error unmarshalling JSON: ", err)
+		logger.Fatal("error unmarshalling JSON: ", err)
 	}
 
 	// Object contains timestamps, format them

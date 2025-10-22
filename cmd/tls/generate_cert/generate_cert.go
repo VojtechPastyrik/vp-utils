@@ -8,13 +8,14 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	tls_cmd "github.com/VojtechPastyrik/vp-utils/cmd/tls"
-	"github.com/spf13/cobra"
-	"log"
 	"math/big"
 	"net"
 	"os"
 	"time"
+
+	tls_cmd "github.com/VojtechPastyrik/vp-utils/cmd/tls"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -44,7 +45,7 @@ func init() {
 func generateCert(outCert, outKey, host string, days int) {
 	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		log.Fatalf("Error generating key: %v", err)
+		logger.Fatalf("error generating key: %v", err)
 	}
 
 	notBefore := time.Now()
@@ -53,7 +54,7 @@ func generateCert(outCert, outKey, host string, days int) {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("Error generating serial number: %v", err)
+		logger.Fatalf("error generating serial number: %v", err)
 	}
 
 	template := x509.Certificate{
@@ -77,32 +78,32 @@ func generateCert(outCert, outKey, host string, days int) {
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
 	if err != nil {
-		log.Fatalf("Error generating certificate: %v", err)
+		logger.Fatalf("error generating certificate: %v", err)
 	}
 
 	// Save certificate
 	certOut, err := os.Create(outCert)
 	if err != nil {
-		log.Fatalf("Error creating certificate file: %v", err)
+		logger.Fatalf("error creating certificate file: %v", err)
 	}
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
-		log.Fatalf("Error writing certificate: %v", err)
+		logger.Fatalf("error writing certificate: %v", err)
 	}
 	certOut.Close()
 
 	// Save key
 	keyOut, err := os.Create(outKey)
 	if err != nil {
-		log.Fatalf("Error creating key file: %v", err)
+		logger.Fatalf("error creating key file: %v", err)
 	}
 
 	keyBytes, err := x509.MarshalECPrivateKey(priv)
 	if err != nil {
-		log.Fatalf("Error converting key: %v", err)
+		logger.Fatalf("error converting key: %v", err)
 	}
 
 	if err := pem.Encode(keyOut, &pem.Block{Type: "EC PRIVATE KEY", Bytes: keyBytes}); err != nil {
-		log.Fatalf("Error writing key: %v", err)
+		logger.Fatalf("error writing key: %v", err)
 	}
 	keyOut.Close()
 

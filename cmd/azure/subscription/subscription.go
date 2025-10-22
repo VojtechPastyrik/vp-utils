@@ -2,14 +2,15 @@ package subscription
 
 import (
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/profiles/2017-03-09/resources/mgmt/subscriptions"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/azure"
-	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/Azure/azure-sdk-for-go/profiles/2017-03-09/resources/mgmt/subscriptions"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
+	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/azure"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -72,7 +73,7 @@ func subscription(changeSub, allSubs bool, arg string) {
 
 		err = cmd.Run()
 		if err != nil {
-			log.Fatalf("Error changing subscription: %v", err)
+			logger.Fatalf("error changing subscription: %v", err)
 		} else {
 			fmt.Printf("Switched to subscription: %s\n", arg)
 
@@ -85,7 +86,7 @@ func listSubscriptions(subscriptionsClient subscriptions.Client, all bool) {
 	cmdActive := exec.Command("az", "account", "show", "--query", "id", "-o", "tsv")
 	activeID, err := cmdActive.Output()
 	if err != nil {
-		log.Fatalf("Cannot get active subscription: %v", err)
+		logger.Fatalf("cannot get active subscription: %v", err)
 		activeID = []byte("")
 	}
 	activeIDStr := strings.TrimSpace(string(activeID))
@@ -95,7 +96,7 @@ func listSubscriptions(subscriptionsClient subscriptions.Client, all bool) {
 		cmdUser := exec.Command("az", "account", "show", "--query", "user.name", "-o", "tsv")
 		userData, err := cmdUser.Output()
 		if err != nil {
-			log.Printf("Varování: Nepodařilo se získat jméno aktuálního uživatele: %v", err)
+			logger.Infof("warning: failed to get current user name: %v", err)
 		} else {
 			currentUser = strings.TrimSpace(string(userData))
 		}
@@ -119,12 +120,12 @@ func listSubscriptions(subscriptionsClient subscriptions.Client, all bool) {
 
 	err = cmd.Run()
 	if err != nil {
-		log.Fatalf("Chyba při výpisu subscriptions: %v", err)
+		logger.Fatalf("error listing subscriptions: %v", err)
 	}
 }
 
 func handleError(err error) {
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatalf("%v", err)
 	}
 }

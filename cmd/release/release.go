@@ -2,16 +2,14 @@ package release
 
 import (
 	"fmt"
-	"os/exec"
-
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	git "github.com/go-git/go-git/v5"
-
-	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
+	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	git "github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 )
 
@@ -43,59 +41,59 @@ func releaseProject() {
 	// Load the git repository
 	repo, err := git.PlainOpen(".")
 	if err != nil {
-		log.Fatalf("Error opening git repository: %v\n", err)
+		logger.Fatalf("error opening git repository: %v\n", err)
 
 	}
 
 	// Check if the current branch is 'main'
 	branch, err := repo.Head()
 	if err != nil {
-		log.Fatalf("Error getting current branch: %v\n", err)
+		logger.Fatalf("error getting current branch: %v\n", err)
 	}
 	if branch.Name().Short() != "main" {
-		log.Fatalf("Current branch is not 'main', but '%s'\n", branch.Name().Short())
+		logger.Fatalf("current branch is not 'main', but '%s'\n", branch.Name().Short())
 	}
 
 	// Get actual state of the files in repository
 	w, err := repo.Worktree()
 	if err != nil {
-		log.Fatalf("Error getting worktree: %v\n", err)
+		logger.Fatalf("error getting worktree: %v\n", err)
 	}
 	// Add all changes to the staging area
 	_, err = w.Add(".")
 	if err != nil {
-		log.Fatalf("Error adding file: %v\n", err)
+		logger.Fatalf("error adding file: %v\n", err)
 	}
 	// Commit the changes
 	commit, err := w.Commit("VERSION: "+version, &git.CommitOptions{})
 	if err != nil {
-		log.Fatalf("Error committing changes: %v\n", err)
+		logger.Fatalf("error committing changes: %v\n", err)
 	}
 	// Create a new tag with the new version
 	_, err = repo.CreateTag(version, commit, nil)
 	if err != nil {
-		log.Fatalf("Error creating tag: %v\n", err)
+		logger.Fatalf("error creating tag: %v\n", err)
 	}
 
 	// Write the new version file
 	writeNewVersionFile(newVersion)
 	_, err = w.Add(".")
 	if err != nil {
-		log.Fatalf("Error adding file: %v\n", err)
+		logger.Fatalf("error adding file: %v\n", err)
 	}
 	// Commit the new version file
 	commit, err = w.Commit("VERSION: "+newVersion, &git.CommitOptions{})
 	if err != nil {
-		log.Fatalf("Error committing changes: %v\n", err)
+		logger.Fatalf("error committing changes: %v\n", err)
 	}
 	// Push the new version file to the remote repository
 	cmd := exec.Command("git", "push", "origin", branch.Name().Short(), "--tags")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Fatalf("Error pushing changes: %v\nOutput: %s", err, string(output))
+		logger.Fatalf("error pushing changes: %v\nOutput: %s", err, string(output))
 	}
-	log.Printf("Successfully released version: %s\n", version)
-	log.Printf("Successfully updated version to: %s\n", newVersion)
+	logger.Infof("successfully released version: %s\n", version)
+	logger.Infof("successfully updated version to: %s\n", newVersion)
 }
 
 func writeNewVersionFile(version string) {
@@ -105,7 +103,7 @@ var Version string = "%s"`, version)
 
 	err := os.WriteFile("version/version.go", []byte(fileContent), 0644)
 	if err != nil {
-		log.Fatalf("Error writing new version file: %v\n", err)
+		logger.Fatalf("error writing new version file: %v\n", err)
 	}
 
 }
@@ -113,7 +111,7 @@ var Version string = "%s"`, version)
 func getVersionFromFile() string {
 	data, err := os.ReadFile("version/version.go")
 	if err != nil {
-		log.Fatalf("Error reading version file: %v\n", err)
+		logger.Fatalf("error reading version file: %v\n", err)
 	}
 	lines := strings.Split(string(data), "\n")
 	for _, line := range lines {
@@ -125,6 +123,6 @@ func getVersionFromFile() string {
 			}
 		}
 	}
-	log.Fatalf("Version not found in version.go")
+	logger.Fatal("version not found in version.go")
 	return ""
 }

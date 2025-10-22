@@ -5,12 +5,12 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
 
 	tls_cmd "github.com/VojtechPastyrik/vp-utils/cmd/tls"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	"github.com/spf13/cobra"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -66,12 +66,12 @@ func printCertificateFromFile(certFile, keyFile, p12Password string) {
 func loadCertificateFromP12(certFile, password string) {
 	data, err := os.ReadFile(certFile)
 	if err != nil {
-		log.Fatalf("Failed to read P12 file: %v", err)
+		logger.Fatalf("failed to read P12 file: %v", err)
 	}
 
 	privateKey, cert, caCerts, err := pkcs12.DecodeChain(data, password)
 	if err != nil {
-		log.Fatalf("Failed to decode P12 file: %v", err)
+		logger.Fatalf("failed to decode P12 file: %v", err)
 	}
 
 	fmt.Printf("Subject Name: %s\n", cert.Subject)
@@ -101,28 +101,28 @@ func loadCertificateFromP12(certFile, password string) {
 func loadCertificateFromPEM(certFile, keyFile string) {
 	certData, err := os.ReadFile(certFile)
 	if err != nil {
-		log.Fatalf("Failed to read cert file: %v", err)
+		logger.Fatalf("failed to read cert file: %v", err)
 	}
 
 	var certs []*x509.Certificate
 	if keyFile == "" {
 		block, _ := pem.Decode(certData)
 		if block == nil || block.Type != "CERTIFICATE" {
-			log.Fatalf("Failed to decode PEM certificate")
+			logger.Fatal("failed to decode PEM certificate")
 		}
 		cert, err := x509.ParseCertificate(block.Bytes)
 		if err != nil {
-			log.Fatalf("Failed to parse certificate: %v", err)
+			logger.Fatalf("failed to parse certificate: %v", err)
 		}
 		certs = append(certs, cert)
 	} else {
 		tlsCert, err := tls.LoadX509KeyPair(certFile, keyFile)
 		if err != nil {
-			log.Fatalf("Failed to load key pair: %v", err)
+			logger.Fatalf("failed to load key pair: %v", err)
 		}
 		certs, err = x509.ParseCertificates(tlsCert.Certificate[0])
 		if err != nil {
-			log.Fatalf("Failed to parse certificates: %v", err)
+			logger.Fatalf("failed to parse certificates: %v", err)
 		}
 	}
 

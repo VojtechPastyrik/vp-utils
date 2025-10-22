@@ -3,9 +3,9 @@ package ingress
 import (
 	"context"
 	"fmt"
-	"log"
 
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/k8s"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	k8sutils "github.com/VojtechPastyrik/vp-utils/utils/k8s"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -31,7 +31,7 @@ func listIngresses() {
 	// Use the same method to get the client as in the ArgoCD example
 	clientset, _, err := k8sutils.KubernetesClient()
 	if err != nil {
-		log.Fatalf("Error creating Kubernetes client: %v", err)
+		logger.Fatalf("error creating Kubernetes client: %v", err)
 	}
 
 	// Print header
@@ -40,7 +40,7 @@ func listIngresses() {
 	// Get list of namespaces
 	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		log.Fatalf("Error getting namespaces: %v", err)
+		logger.Fatalf("error getting namespaces: %v", err)
 	}
 
 	// Process all namespaces
