@@ -3,9 +3,10 @@ package jwt
 import (
 	"encoding/base64"
 	"fmt"
+
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var FlagDecode bool
@@ -27,14 +28,14 @@ func init() {
 
 func encodeDecode(decode bool, inputString string) {
 	if inputString == "" {
-		log.Print("Input string is empty")
+		logger.Info("input string is empty")
 		return
 	}
 
 	if decode {
 		decodedBytes, err := base64.StdEncoding.DecodeString(inputString)
 		if err != nil {
-			log.Fatalf("Error decoding base64: %v", err)
+			logger.Fatalf("error decoding base64: %v", err)
 		}
 		fmt.Println(string(decodedBytes))
 	} else {

@@ -3,10 +3,10 @@ package interactive_clipboard
 import (
 	"encoding/base64"
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/base64"
-	"github.com/atotto/clipboard"
-	"log"
 
+	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/base64"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +20,7 @@ var Cmd = &cobra.Command{
 	Run: func(c *cobra.Command, args []string) {
 		clipboardData, err := clipboard.ReadAll()
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatalf("%v", err)
 		}
 		if FlagDecode {
 			dataPlainText, err := base64.StdEncoding.DecodeString(clipboardData)

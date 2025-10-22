@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/youtrack"
-	"log"
 	"net/http"
 	"time"
 
+	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/youtrack"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -102,7 +102,7 @@ type WorkItem struct {
 
 func trackTime(token, ytUrl, issueId, note, date string, minutes int, hours int) {
 	if hours == 0 && minutes == 0 {
-		log.Fatalln("You must specify either minutes or hours to track time")
+		logger.Fatal("you must specify either minutes or hours to track time")
 	}
 	if hours > 0 {
 		minutes += hours * 60
@@ -111,7 +111,7 @@ func trackTime(token, ytUrl, issueId, note, date string, minutes int, hours int)
 	if date != "" {
 		parsedDate, err := time.Parse("2006-01-02", date)
 		if err != nil {
-			log.Fatalf("Invalid date format: %v. Use YYYY-MM-DD format", err)
+			logger.Fatalf("invalid date format: %v. Use YYYY-MM-DD format", err)
 		}
 		dateUnixMilli = parsedDate.UnixMilli()
 	} else {
@@ -128,12 +128,12 @@ func trackTime(token, ytUrl, issueId, note, date string, minutes int, hours int)
 
 	workJson, err := json.Marshal(work)
 	if err != nil {
-		log.Fatalln("Error marshalling JSON:", err)
+		logger.Fatal("error marshalling JSON:", err)
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(workJson))
 	if err != nil {
-		log.Fatalln("Error creating request:", err)
+		logger.Fatal("error creating request:", err)
 	}
 
 	req.Header.Set("Accept", "application/json")
@@ -143,13 +143,13 @@ func trackTime(token, ytUrl, issueId, note, date string, minutes int, hours int)
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalln("Error making request:", err)
+		logger.Fatal("error making request:", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		log.Fatalf("Failed to track time in YouTrack. API returned: %s (HTTP %d)", resp.Status, resp.StatusCode)
+		logger.Fatalf("failed to track time in YouTrack. API returned: %s (HTTP %d)", resp.Status, resp.StatusCode)
 	} else {
-		log.Println("Time tracked successfully in YouTrack")
+		logger.Info("time tracked successfully in YouTrack")
 	}
 }

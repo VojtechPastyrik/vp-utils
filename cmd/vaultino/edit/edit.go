@@ -1,9 +1,8 @@
 package edit
 
 import (
-	"log"
-
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/vaultino"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	vaultinoUtils "github.com/VojtechPastyrik/vp-utils/utils/vaultino"
 
 	"github.com/spf13/cobra"
@@ -17,9 +16,12 @@ var Cmd = &cobra.Command{
 	Example: "vp-utils vaultino edit <path_tp_file>",
 	Run: func(cmd *cobra.Command, args []string) {
 		if args == nil || len(args) < 1 {
-			log.Fatalf("Path to the encrypted file is required as the first argument")
+			logger.Fatalf("path to the encrypted file is required as the first argument")
 		}
-		vaultinoUtils.EditVault(args[0])
+		err := vaultinoUtils.EditVault(args[0])
+		if err != nil {
+			logger.Fatalf("failed to edit vault: %v", err)
+		}
 	},
 }
 

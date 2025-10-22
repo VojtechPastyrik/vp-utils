@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 	"time"
 
 	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	"github.com/VojtechPastyrik/vp-utils/version"
 	"github.com/dop251/goja"
 	jwtlib "github.com/golang-jwt/jwt/v4"
@@ -175,17 +175,17 @@ payload: payload
 
 func runMockHTTPServer(port int, configPath string) {
 	if FlagConfigPath == "" {
-		log.Fatalf("Flag config file path is required")
+		logger.Fatal("flag config file path is required")
 	}
 	portStr := strconv.Itoa(port)
 	config, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Fatalf("Error reading config file: %v", err)
+		logger.Fatalf("error reading config file: %v", err)
 	}
 
 	var cfg Config
 	if err := yaml.Unmarshal(config, &cfg); err != nil {
-		log.Fatalf("cannot parse yaml: %v", err)
+		logger.Fatalf("cannot parse yaml: %v", err)
 	}
 
 	r := mux.NewRouter()
@@ -195,10 +195,10 @@ func runMockHTTPServer(port int, configPath string) {
 	r.Use(MetricsMiddleware)
 
 	for _, route := range cfg.Routes {
-		log.Println("Setting up route:", route.Path, "with method:", route.Method)
+		logger.Info("setting up route:", route.Path, "with method:", route.Method)
 
 		if route.Auth.Type != "" && route.Auth.Type != AuthTypeBearer && route.Auth.Type != AuthTypeBasic {
-			log.Fatalf("Invalid auth type: %v. Possible values are: [%s , %s]", route.Auth.Type, AuthTypeBearer, AuthTypeBasic)
+			logger.Fatalf("invalid auth type: %v. Possible values are: [%s , %s]", route.Auth.Type, AuthTypeBearer, AuthTypeBasic)
 		}
 
 		r.HandleFunc(route.Path, func(w http.ResponseWriter, r *http.Request) {
@@ -217,12 +217,12 @@ func runMockHTTPServer(port int, configPath string) {
 			bodyBytes, _ := io.ReadAll(r.Body)
 			r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // Reset the body so it can be read again later
 			body := string(bodyBytes)
-			log.Println("[", tracingId, "] Received request:", r.Method, r.URL.Path, "with body:", body, "from", r.RemoteAddr)
+			logger.Info("[", tracingId, "] received request:", r.Method, r.URL.Path, "with body:", body, "from", r.RemoteAddr)
 
 			if route.Script == "" {
 				w.WriteHeader(route.ResponseCode)
 				w.Write([]byte(route.Response))
-				log.Println("[", tracingId, "] Response", route.Path, "with code", route.ResponseCode, "and body", route.Response)
+				logger.Info("[", tracingId, "] response", route.Path, "with code", route.ResponseCode, "and body", route.Response)
 				return
 			}
 
@@ -233,10 +233,10 @@ func runMockHTTPServer(port int, configPath string) {
 				"getPayload": func() string {
 					payload, err := ctx.GetPayload()
 					if err != nil {
-						log.Printf("Error reading payload: %v", err)
+						logger.Infof("error reading payload: %v", err)
 						return ""
 					}
-					log.Println("[", tracingId, "] Payload:", payload)
+					logger.Info("[", tracingId, "] payload:", payload)
 					return payload
 				},
 				"setHeader":   ctx.SetHeader,
@@ -245,17 +245,17 @@ func runMockHTTPServer(port int, configPath string) {
 				"getURLParam": ctx.GetURLParam,
 			})
 			vm.Set("log", func(msg string) {
-				log.Println("[", tracingId, "] JS log: ", msg)
+				logger.Info("[", tracingId, "] JS log: ", msg)
 			})
 
 			_, err := vm.RunString(route.Script)
 			if err != nil {
-				log.Printf("[ %s ] Error executing script for route %s: %v", tracingId, route.Path, err)
+				logger.Infof("[ %s ] error executing script for route %s: %v", tracingId, route.Path, err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
 
-			log.Println("[", tracingId, "] Response", route.Path, "with code", rw.statusCode, "and body", rw.body.String())
+			logger.Info("[", tracingId, "] response", route.Path, "with code", rw.statusCode, "and body", rw.body.String())
 		}).Methods(route.Method)
 
 	}
@@ -265,12 +265,16 @@ func runMockHTTPServer(port int, configPath string) {
 	})
 
 	go func() {
-		log.Println("Prometheus metrics available at /metrics")
-		log.Fatal(http.ListenAndServe(":8090", promhttp.Handler()))
+		logger.Info("prometheus metrics available at /metrics")
+		if err := http.ListenAndServe(":8090", promhttp.Handler()); err != nil {
+			logger.Fatalf("%v", err)
+		}
 	}()
 
-	log.Println("Mock server listening on :" + portStr)
-	log.Fatal(http.ListenAndServe(":"+portStr, r))
+	logger.Info("mock server listening on :" + portStr)
+	if err := http.ListenAndServe(":"+portStr, r); err != nil {
+		logger.Fatalf("%v", err)
+	}
 }
 
 func AuthMiddleware(routes []Route) mux.MiddlewareFunc {
@@ -313,37 +317,37 @@ func validateBasicAuth(username, password string, users []User) bool {
 func validateJwtToken(token string, claims map[string]string) bool {
 	parts := strings.Split(token, ".")
 	if len(parts) != 3 {
-		log.Printf("Invalid JWT token: expected 3 parts, but found %d", len(parts))
+		logger.Infof("invalid JWT token: expected 3 parts, but found %d", len(parts))
 		return false
 	}
 
 	claimsJSON, err := jwtlib.DecodeSegment(parts[1])
 	if err != nil {
-		log.Printf("Error decoding Claims: %v", err)
+		logger.Infof("error decoding claims: %v", err)
 		return false
 	}
 
 	var claimsMap map[string]interface{}
 	if err := json.Unmarshal(claimsJSON, &claimsMap); err != nil {
-		log.Printf("Error unmarshalling claims JSON: %v", err)
+		logger.Infof("error unmarshalling claims JSON: %v", err)
 		return false
 	}
 
 	// Check if the 'exp' claim exists and is a valid timestamp
 	if exp, ok := claimsMap["exp"].(float64); ok {
 		if int64(exp) < time.Now().Unix() {
-			log.Printf("JWT token has expired. Exp: %d, Now: %d", int64(exp), time.Now().Unix())
+			logger.Infof("JWT token has expired. Exp: %d, Now: %d", int64(exp), time.Now().Unix())
 			return false
 		}
 	} else {
-		log.Printf("JWT token does not contain 'exp' claim")
+		logger.Info("JWT token does not contain 'exp' claim")
 		return false
 	}
 
 	// Check if the claims map contains the required claims
 	for key, value := range claims {
 		if claimsMap[key] != value {
-			log.Printf("JWT token does not contain required claim: %s with value: %s", key, value)
+			logger.Infof("JWT token does not contain required claim: %s with value: %s", key, value)
 			return false
 		}
 	}

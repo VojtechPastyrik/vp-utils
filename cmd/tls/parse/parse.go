@@ -6,11 +6,11 @@ import (
 	_ "crypto/x509"
 	"encoding/pem"
 	"fmt"
-	tls_cmd "github.com/VojtechPastyrik/vp-utils/cmd/tls"
-	"log"
 	"os"
 	"time"
 
+	tls_cmd "github.com/VojtechPastyrik/vp-utils/cmd/tls"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -68,7 +68,7 @@ func printCertificateFromServer(addr, serverName, outputFile string) {
 
 	conn, err := tls.Dial("tcp", addr, conf)
 	if err != nil {
-		log.Println("Error in Dial", err)
+		logger.Info("error in Dial", err)
 		return
 	}
 	defer conn.Close()
@@ -94,7 +94,7 @@ func printCertificateFromServer(addr, serverName, outputFile string) {
 func saveCertificateToFile(cert *x509.Certificate, outputFile string) {
 	file, err := os.Create(outputFile)
 	if err != nil {
-		log.Fatalf("Failed to create file %s: %v", outputFile, err)
+		logger.Fatalf("failed to create file %s: %v", outputFile, err)
 	}
 	defer file.Close()
 
@@ -103,9 +103,9 @@ func saveCertificateToFile(cert *x509.Certificate, outputFile string) {
 		Bytes: cert.Raw,
 	})
 	if err != nil {
-		log.Fatalf("Failed to write certificate to file %s: %v", outputFile, err)
+		logger.Fatalf("failed to write certificate to file %s: %v", outputFile, err)
 	}
 
-	log.Printf("Certificate saved to %s", outputFile)
+	logger.Infof("certificate saved to %s", outputFile)
 	fmt.Println()
 }

@@ -1,13 +1,14 @@
 package add_context
 
 import (
+	"os"
+	"path/filepath"
+
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/k8s"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
-	"log"
-	"os"
-	"path/filepath"
 )
 
 var FlagFilePath string
@@ -35,7 +36,7 @@ func init() {
 func mergeKubeConfigs(filePath string) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatalf("Failed to get home directory: %v", err)
+		logger.Fatalf("failed to get home directory: %v", err)
 	}
 
 	kubeDir := filepath.Join(homeDir, ".kube")
@@ -43,15 +44,15 @@ func mergeKubeConfigs(filePath string) {
 
 	// Check if input file exists
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		log.Fatalf("Input kubeconfig file does not exist: %s", filePath)
+		logger.Fatalf("input kubeconfig file does not exist: %s", filePath)
 	}
 
-	log.Printf("Merging kubeconfig from: %s", filePath)
+	logger.Infof("merging kubeconfig from: %s", filePath)
 
 	// Create .kube directory if it doesn't exist
 	if _, err := os.Stat(kubeDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(kubeDir, 0755); err != nil {
-			log.Fatalf("Failed to create .kube directory: %v", err)
+			logger.Fatalf("failed to create .kube directory: %v", err)
 		}
 	}
 
@@ -60,14 +61,14 @@ func mergeKubeConfigs(filePath string) {
 	if _, err := os.Stat(existingConfigPath); !os.IsNotExist(err) {
 		existingConfig, err = clientcmd.LoadFromFile(existingConfigPath)
 		if err != nil {
-			log.Fatalf("Failed to load existing kubeconfig: %v", err)
+			logger.Fatalf("failed to load existing kubeconfig: %v", err)
 		}
 	}
 
 	// Load the new config
 	newConfig, err := clientcmd.LoadFromFile(filePath)
 	if err != nil {
-		log.Fatalf("Failed to load new kubeconfig: %v", err)
+		logger.Fatalf("failed to load new kubeconfig: %v", err)
 	}
 
 	// Merge configs
@@ -93,8 +94,8 @@ func mergeKubeConfigs(filePath string) {
 
 	// Save the merged config
 	if err := clientcmd.WriteToFile(*existingConfig, existingConfigPath); err != nil {
-		log.Fatalf("Failed to save merged kubeconfig: %v", err)
+		logger.Fatalf("failed to save merged kubeconfig: %v", err)
 	}
 
-	log.Printf("Kubeconfig successfully updated and merged with context from: %s", filePath)
+	logger.Infof("kubeconfig successfully updated and merged with context from: %s", filePath)
 }

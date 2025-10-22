@@ -1,9 +1,8 @@
 package create
 
 import (
-	"log"
-
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/vaultino"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	vaultinoUtils "github.com/VojtechPastyrik/vp-utils/utils/vaultino"
 	"github.com/spf13/cobra"
 )
@@ -20,9 +19,12 @@ var Cmd = &cobra.Command{
 	Example: "vp-utils vaultino create <name> --file <path/to/encrypted_file>",
 	Run: func(cmd *cobra.Command, args []string) {
 		if args == nil || len(args) < 1 {
-			log.Fatalf("Name of the encrypted file is required as the first argument")
+			logger.Fatalf("name of the encrypted file is required as the first argument")
 		}
-		vaultinoUtils.CreateVault(args[0], FlagFile)
+		err := vaultinoUtils.CreateVault(args[0], FlagFile)
+		if err != nil {
+			logger.Fatalf("failed to create vault: %v", err)
+		}
 	},
 }
 

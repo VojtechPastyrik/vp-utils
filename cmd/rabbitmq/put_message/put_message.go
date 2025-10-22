@@ -2,10 +2,10 @@ package put_message
 
 import (
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	rabbitmqUtisl "github.com/VojtechPastyrik/vp-utils/utils/rabbitmq"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var (
@@ -53,7 +53,7 @@ func init() {
 func putMessage(host string, port int, user, password, virtualHost, exchange, routingKey string, ssl bool, sslCert, sslKey string) {
 	con, ch, err := rabbitmqUtisl.ConnectToRabbitMQ(ssl, user, password, host, port, virtualHost, sslCert, sslKey)
 	if err != nil {
-		log.Fatalf("Connection to RabbitMQ failed: %s", err.Error())
+		logger.Fatalf("connection to RabbitMQ failed: %s", err.Error())
 	}
 
 	var messageUsed string
@@ -74,7 +74,7 @@ func putMessage(host string, port int, user, password, virtualHost, exchange, ro
 			Body:        []byte(messageUsed),
 		},
 	); err != nil {
-		log.Fatalf("Failed to put message: %s", err.Error())
+		logger.Fatalf("failed to put message: %s", err.Error())
 	}
-	log.Printf("Message sent to exchange '%s' with routing key '%s'", exchange, routingKey)
+	logger.Infof("message sent to exchange '%s' with routing key '%s'", exchange, routingKey)
 }

@@ -1,12 +1,12 @@
 package read_queue
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	rabbitmqUtisl "github.com/VojtechPastyrik/vp-utils/utils/rabbitmq"
 	"github.com/spf13/cobra"
 )
@@ -52,14 +52,14 @@ func init() {
 func readQueue(host string, port int, user, password, virtualHost, queue string, ssl bool, sslCert, sslKey string) {
 	con, ch, err := rabbitmqUtisl.ConnectToRabbitMQ(ssl, user, password, host, port, virtualHost, sslCert, sslKey)
 	if err != nil {
-		log.Fatalf("Connection to RabbitMQ failed: %s", err.Error())
+		logger.Fatalf("connection to RabbitMQ failed: %s", err.Error())
 	}
 	defer con.Close()
 	defer ch.Close()
 
 	msgs, err := ch.Consume(queue, "", true, false, false, false, nil)
 	if err != nil {
-		log.Fatalf("Failed to register consumer: %s", err.Error())
+		logger.Fatalf("failed to register consumer: %s", err.Error())
 	}
 
 	sigs := make(chan os.Signal, 1)
@@ -67,13 +67,13 @@ func readQueue(host string, port int, user, password, virtualHost, queue string,
 
 	go func() {
 		<-sigs
-		log.Println("Shutting down...")
+		logger.Info("shutting down...")
 		con.Close()
 		ch.Close()
 		os.Exit(0)
 	}()
 
 	for msg := range msgs {
-		log.Printf("Message from the queue: %s headers: %s routingKey: %s", string(msg.Body), msg.Headers, msg.RoutingKey)
+		logger.Infof("message from the queue: %s headers: %s routingKey: %s", string(msg.Body), msg.Headers, msg.RoutingKey)
 	}
 }

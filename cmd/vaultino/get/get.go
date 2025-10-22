@@ -2,9 +2,9 @@ package get
 
 import (
 	"fmt"
-	"log"
 
 	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/vaultino"
+	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
 	vaultinoUtils "github.com/VojtechPastyrik/vp-utils/utils/vaultino"
 	"github.com/spf13/cobra"
 )
@@ -22,11 +22,11 @@ var Cmd = &cobra.Command{
 	Example: "vp-utils vaultino get <path_to_file> -k <key>",
 	Run: func(cmd *cobra.Command, args []string) {
 		if args == nil || len(args) < 1 {
-			log.Fatalf("Path to the encrypted file is required as the first argument")
+			logger.Fatalf("path to the encrypted file is required as the first argument")
 		}
 		value, err := vaultinoUtils.GetSecretFromVault(args[0], Flagkey, FlagPassword)
 		if err != nil {
-			log.Fatalf("Failed to get secret: %v", err)
+			logger.Fatalf("failed to get secret: %v", err)
 		}
 		fmt.Println(value)
 	},
