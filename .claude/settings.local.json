@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go build:*)",
+      "Bash(go run:*)",
+      "Bash(timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5673')"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
