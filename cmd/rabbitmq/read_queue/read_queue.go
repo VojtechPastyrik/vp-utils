@@ -74,6 +74,6 @@ func readQueue(host string, port int, user, password, virtualHost, queue string,
 	}()
 
 	for msg := range msgs {
-		log.Printf("Message from the queue: %s", string(msg.Body))
+		log.Printf("Message from the queue: %s headers: %s routingKey: %s", string(msg.Body), msg.Headers, msg.RoutingKey)
 	}
 }
