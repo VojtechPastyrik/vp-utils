@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -17,6 +18,55 @@ import (
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/cobra"
 )
+
+type LoadProfile struct {
+	Duration        string
+	QueueCount      int
+	ExchangeCount   int
+	RoutingKeyCount int
+	MessageSize     int
+	ParallelClients int
+	Description     string
+}
+
+var loadProfiles = map[string]LoadProfile{
+	"light": {
+		Duration:        "30s",
+		QueueCount:      5,
+		ExchangeCount:   2,
+		RoutingKeyCount: 3,
+		MessageSize:     1024,
+		ParallelClients: 2,
+		Description:     "Light load - sanity check (2.5K-5K msgs/sec expected)",
+	},
+	"medium": {
+		Duration:        "2m",
+		QueueCount:      20,
+		ExchangeCount:   5,
+		RoutingKeyCount: 10,
+		MessageSize:     4096,
+		ParallelClients: 10,
+		Description:     "Medium load - typical workload (20K-50K msgs/sec expected)",
+	},
+	"heavy": {
+		Duration:        "3m",
+		QueueCount:      50,
+		ExchangeCount:   20,
+		RoutingKeyCount: 30,
+		MessageSize:     8192,
+		ParallelClients: 20,
+		Description:     "Heavy load - stress test (100K+ msgs/sec expected)",
+	},
+	"sustained": {
+		Duration:        "10m",
+		QueueCount:      30,
+		ExchangeCount:   10,
+		RoutingKeyCount: 15,
+		MessageSize:     2048,
+		ParallelClients: 15,
+		Description:     "Sustained load - stability test (long-running)",
+	},
+}
 
 var (
 	FlagHost              string
@@ -33,6 +83,7 @@ var (
 	FlagRoutingKeyCount   int
 	FlagMessageSize       int
 	FlagParallelClients   int
+	FlagLoadProfile       string
 	sentMessagesCount     int32
 	receivedMessagesCount int32
 )
@@ -47,53 +98,88 @@ var Cmd = &cobra.Command{
 	Short:   "Run RabbitMQ load test",
 	Long:    "Run RabbitMQ load test using the specified configuration. This command is useful for performance testing and benchmarking RabbitMQ servers.",
 	Run: func(cmd *cobra.Command, args []string) {
-		runLoadTest(FlagHost, FlagPort, FlagUser, FlagPassword, FlagVirtualHost, FlagSsl, FlagSslCert, FlagSslKey, FlagDuration, FlagQueueCount, FlagExchangeCount, FlagRoutingKeyCount, FlagMessageSize, FlagParallelClients)
+		runLoadTestWithProfile(FlagHost, FlagPort, FlagUser, FlagPassword, FlagVirtualHost, FlagSsl, FlagSslCert, FlagSslKey, FlagLoadProfile, FlagDuration, FlagQueueCount, FlagExchangeCount, FlagRoutingKeyCount, FlagMessageSize, FlagParallelClients)
 	},
 }
 
 func init() {
 	parent_cmd.Cmd.AddCommand(Cmd)
 	Cmd.Flags().StringVarP(&FlagHost, "host", "H", "localhost", "RabbitMQ host")
-	Cmd.MarkFlagRequired("host")
 	Cmd.Flags().IntVarP(&FlagPort, "port", "P", 5672, "RabbitMQ port")
-	Cmd.MarkFlagRequired("port")
 	Cmd.Flags().StringVarP(&FlagUser, "user", "u", "guest", "RabbitMQ username")
-	Cmd.MarkFlagRequired("user")
 	Cmd.Flags().StringVarP(&FlagPassword, "password", "p", "guest", "RabbitMQ password")
-	Cmd.MarkFlagRequired("password")
 	Cmd.Flags().StringVarP(&FlagVirtualHost, "vhost", "v", "/", "RabbitMQ virtual host")
 	Cmd.Flags().BoolVarP(&FlagSsl, "ssl", "s", false, "Enable SSL")
 	Cmd.Flags().StringVarP(&FlagSslCert, "ssl-cert", "c", "", "Path to SSL certificate")
 	Cmd.Flags().StringVarP(&FlagSslKey, "ssl-key", "k", "", "Path to SSL key")
-	Cmd.Flags().StringVarP(&FlagDuration, "duration", "d", "1m", "Duration of the load test")
-	Cmd.Flags().IntVarP(&FlagQueueCount, "queue-count", "q", 50, "Number of queues to create")
-	Cmd.Flags().IntVarP(&FlagExchangeCount, "exchange-count", "e", 20, "Number of exchanges to create")
-	Cmd.Flags().IntVarP(&FlagRoutingKeyCount, "routing-keys", "r", 50, "Number of routing keys to use")
-	Cmd.Flags().IntVarP(&FlagMessageSize, "message-size", "m", 1024, "Size of each message in bytes")
-	Cmd.Flags().IntVarP(&FlagParallelClients, "parallel-clients", "C", 20, "Number of parallel clients")
+	Cmd.Flags().StringVarP(&FlagLoadProfile, "profile", "L", "medium", "Load profile: light, medium, heavy, sustained (overrides individual settings)")
+	Cmd.Flags().StringVarP(&FlagDuration, "duration", "d", "", "Duration of the load test (overrides profile)")
+	Cmd.Flags().IntVarP(&FlagQueueCount, "queue-count", "q", 0, "Number of queues to create (overrides profile)")
+	Cmd.Flags().IntVarP(&FlagExchangeCount, "exchange-count", "e", 0, "Number of exchanges to create (overrides profile)")
+	Cmd.Flags().IntVarP(&FlagRoutingKeyCount, "routing-keys", "r", 0, "Number of routing keys to use (overrides profile)")
+	Cmd.Flags().IntVarP(&FlagMessageSize, "message-size", "m", 0, "Size of each message in bytes (overrides profile)")
+	Cmd.Flags().IntVarP(&FlagParallelClients, "parallel-clients", "C", 0, "Number of parallel clients (overrides profile)")
+}
+
+func runLoadTestWithProfile(host string, port int, user, password, virtualHost string, ssl bool, sslCert, sslKey, profile, duration string, queueCount, exchangeCount, routingKeyCount, messageSize, parallelClients int) {
+	// Load profile settings
+	loadProfile, exists := loadProfiles[profile]
+	if !exists {
+		logger.Errorf("invalid profile '%s'. Available profiles: light, medium, heavy, sustained", profile)
+		return
+	}
+
+	// Apply profile defaults, then override with explicit flags
+	finalDuration := duration
+	if finalDuration == "" {
+		finalDuration = loadProfile.Duration
+	}
+
+	finalQueueCount := queueCount
+	if finalQueueCount == 0 {
+		finalQueueCount = loadProfile.QueueCount
+	}
+
+	finalExchangeCount := exchangeCount
+	if finalExchangeCount == 0 {
+		finalExchangeCount = loadProfile.ExchangeCount
+	}
+
+	finalRoutingKeyCount := routingKeyCount
+	if finalRoutingKeyCount == 0 {
+		finalRoutingKeyCount = loadProfile.RoutingKeyCount
+	}
+
+	finalMessageSize := messageSize
+	if finalMessageSize == 0 {
+		finalMessageSize = loadProfile.MessageSize
+	}
+
+	finalParallelClients := parallelClients
+	if finalParallelClients == 0 {
+		finalParallelClients = loadProfile.ParallelClients
+	}
+
+	logger.Infof("using load profile: %s", profile)
+	logger.Infof("%s", loadProfile.Description)
+
+	runLoadTest(host, port, user, password, virtualHost, ssl, sslCert, sslKey, finalDuration, finalQueueCount, finalExchangeCount, finalRoutingKeyCount, finalMessageSize, finalParallelClients)
 }
 
 func runLoadTest(host string, port int, user, password, virtualHost string, ssl bool, sslCert, sslKey, duration string, queueCount, exchangeCount, routingKeyCount, messageSize, parallelClients int) {
+	startTime := time.Now()
+
 	con, ch, err := rabbitmqUtisl.ConnectToRabbitMQ(ssl, user, password, host, port, virtualHost, sslCert, sslKey)
 	if err != nil {
 		logger.Errorf("connection to rabbitmq failed: %v", err)
 		return
 	}
+	defer con.Close()
 
 	exchangeList, queueList, exchangeRoutingKeys := createResources(ch, exchangeCount, queueCount, routingKeyCount)
-	defer func() {
-		cleanupResources(ch, exchangeList, queueList)
-	}()
 
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	go func() {
-		<-sigChan
-		logger.Info("signal received, cleaning up resources...")
-		cleanupResources(ch, exchangeList, queueList)
-		os.Exit(0)
-	}()
 
 	durationParsed, err := time.ParseDuration(duration)
 	if err != nil {
@@ -101,9 +187,26 @@ func runLoadTest(host string, port int, user, password, virtualHost string, ssl 
 		return
 	}
 
-	startConsumersAndProducers(con, queueList, exchangeList, exchangeRoutingKeys, parallelClients, durationParsed, messageSize)
+	// Run test in a goroutine so we can handle signals
+	done := make(chan struct{})
+	go func() {
+		startConsumersAndProducers(con, queueList, exchangeList, exchangeRoutingKeys, parallelClients, durationParsed, messageSize)
+		close(done)
+	}()
 
-	logger.Infof("load test completed. sent messages: %d, received messages: %d", sentMessagesCount, receivedMessagesCount)
+	// Wait for either test to complete or signal
+	select {
+	case <-done:
+		logger.Info("load test completed normally")
+	case sig := <-sigChan:
+		logger.Infof("signal received (%v), stopping test...", sig)
+	}
+
+	endTime := time.Now()
+	printStatistics(startTime, endTime, sentMessagesCount, receivedMessagesCount, queueCount, exchangeCount, routingKeyCount, messageSize, parallelClients, durationParsed)
+
+	logger.Info("starting cleanup...")
+	cleanupResources(ch, exchangeList, queueList)
 }
 
 func createResources(ch *amqp091.Channel, exchangeCount, queueCount, routingKeyCount int) ([]string, []string, map[string][]string) {
@@ -125,7 +228,11 @@ func createResources(ch *amqp091.Channel, exchangeCount, queueCount, routingKeyC
 
 	for i := 0; i < queueCount; i++ {
 		queueName := fmt.Sprintf("test-queue-%d", i)
-		_, err := ch.QueueDeclare(queueName, true, false, false, false, nil)
+		// Create quorum queue by setting x-queue-type to "quorum"
+		args := amqp091.Table{
+			"x-queue-type": "quorum",
+		}
+		_, err := ch.QueueDeclare(queueName, true, false, false, false, args)
 		if err != nil {
 			logger.Errorf("failed to declare queue %s: %v", queueName, err)
 		}
@@ -155,19 +262,48 @@ func createResources(ch *amqp091.Channel, exchangeCount, queueCount, routingKeyC
 }
 
 func cleanupResources(ch *amqp091.Channel, exchangeList, queueList []string) {
+	// First, purge all queues to remove remaining messages
+	for _, queue := range queueList {
+		purgedCount, err := ch.QueuePurge(queue, false)
+		if err != nil {
+			logger.Errorf("failed to purge queue %s: %v", queue, err)
+		} else {
+			logger.Infof("purged %d messages from queue %s", purgedCount, queue)
+		}
+	}
+
+	// Unbind queues from exchanges
+	for _, exchange := range exchangeList {
+		for _, queue := range queueList {
+			err := ch.QueueUnbind(queue, "", exchange, nil)
+			if err != nil {
+				logger.Debugf("failed to unbind queue %s from exchange %s: %v", queue, exchange, err)
+				// Continue even if unbind fails - queue might not be bound with this routing key
+			}
+		}
+	}
+
+	// Delete exchanges
 	for _, exchange := range exchangeList {
 		err := ch.ExchangeDelete(exchange, false, false)
 		if err != nil {
 			logger.Errorf("failed to delete exchange %s: %v", exchange, err)
+		} else {
+			logger.Infof("deleted exchange %s", exchange)
 		}
 	}
 
+	// Delete queues
 	for _, queue := range queueList {
-		_, err := ch.QueueDelete(queue, false, false, false)
+		deletedCount, err := ch.QueueDelete(queue, false, false, false)
 		if err != nil {
 			logger.Errorf("failed to delete queue %s: %v", queue, err)
+		} else {
+			logger.Infof("deleted queue %s (%d messages remaining)", queue, deletedCount)
 		}
 	}
+
+	logger.Info("cleanup completed")
 }
 
 func startConsumersAndProducers(conn *amqp091.Connection, queueList, exchangeList []string, exchangeRoutingKeys map[string][]string, parallelClients int, duration time.Duration, messageSize int) {
@@ -339,6 +475,11 @@ func drainQueues(ch *amqp091.Channel, queues []string) {
 }
 
 func produceMessages(ch *amqp091.Channel, exchanges []string, exchangeRoutingKeys map[string][]string, messageSize int, duration time.Duration, doneChan <-chan struct{}) {
+	if len(exchanges) == 0 {
+		logger.Warnf("no exchanges provided, producer exiting")
+		return
+	}
+
 	timeout := time.After(duration)
 	message := make([]byte, messageSize)
 	rand.Read(message)
@@ -358,6 +499,9 @@ func produceMessages(ch *amqp091.Channel, exchanges []string, exchangeRoutingKey
 			logger.Info("producer timeout reached, stopping...")
 			return
 		default:
+			if len(exchanges) == 0 {
+				continue
+			}
 			exchange := exchanges[rand.Intn(len(exchanges))]
 			routingKeys := exchangeRoutingKeys[exchange]
 			if len(routingKeys) == 0 {
@@ -374,4 +518,53 @@ func produceMessages(ch *amqp091.Channel, exchanges []string, exchangeRoutingKey
 			}
 		}
 	}
+}
+
+func printStatistics(startTime, endTime time.Time, sentMessages, receivedMessages int32, queueCount, exchangeCount, routingKeyCount, messageSize, parallelClients int, expectedDuration time.Duration) {
+	actualDuration := endTime.Sub(startTime)
+	durationSeconds := actualDuration.Seconds()
+	expectedSeconds := expectedDuration.Seconds()
+
+	sentMsgsPerSecond := float64(sentMessages) / durationSeconds
+	receivedMsgsPerSecond := float64(receivedMessages) / durationSeconds
+
+	totalDataSent := int64(sentMessages) * int64(messageSize)
+	totalDataReceived := int64(receivedMessages) * int64(messageSize)
+
+	dataSentMBps := float64(totalDataSent) / (1024 * 1024 * durationSeconds)
+	dataReceivedMBps := float64(totalDataReceived) / (1024 * 1024 * durationSeconds)
+
+	duplicationFactor := float64(receivedMessages) / float64(sentMessages)
+	timeMultiplier := durationSeconds / expectedSeconds
+
+	separator := strings.Repeat("=", 70)
+	fmt.Println("\n" + separator)
+	fmt.Println("                    LOAD TEST STATISTICS                         ")
+	fmt.Println(separator)
+	fmt.Printf("\nTest Configuration:\n")
+	fmt.Printf("  - Expected Duration:     %.2f seconds\n", expectedSeconds)
+	fmt.Printf("  - Actual Duration:       %.2f seconds\n", durationSeconds)
+	fmt.Printf("  - Time Multiplier:       %.2f x\n", timeMultiplier)
+	fmt.Printf("  - Queues:                %d (type: quorum)\n", queueCount)
+	fmt.Printf("  - Exchanges:             %d\n", exchangeCount)
+	fmt.Printf("  - Routing Keys:          %d\n", routingKeyCount)
+	fmt.Printf("  - Message Size:          %d bytes\n", messageSize)
+	fmt.Printf("  - Parallel Clients:      %d (consumers + producers)\n", parallelClients)
+
+	fmt.Printf("\nMessage Statistics:\n")
+	fmt.Printf("  - Messages Sent:         %d\n", sentMessages)
+	fmt.Printf("  - Messages Received:     %d\n", receivedMessages)
+	fmt.Printf("  - Duplication Factor:    %.2f x\n", duplicationFactor)
+
+	fmt.Printf("\nThroughput:\n")
+	fmt.Printf("  - Send Rate:             %.2f msgs/sec\n", sentMsgsPerSecond)
+	fmt.Printf("  - Receive Rate:          %.2f msgs/sec\n", receivedMsgsPerSecond)
+
+	fmt.Printf("\nData Transfer:\n")
+	fmt.Printf("  - Total Data Sent:       %.2f MB\n", float64(totalDataSent)/(1024*1024))
+	fmt.Printf("  - Total Data Received:   %.2f MB\n", float64(totalDataReceived)/(1024*1024))
+	fmt.Printf("  - Send Rate:             %.2f MB/s\n", dataSentMBps)
+	fmt.Printf("  - Receive Rate:          %.2f MB/s\n", dataReceivedMBps)
+
+	fmt.Println("\n" + separator)
 }
