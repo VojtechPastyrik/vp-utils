@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/term"
 	"gopkg.in/yaml.v3"
@@ -88,6 +89,14 @@ func DecryptVaultToFile(vaultFile string) error {
 }
 
 func EditVault(vaultFile string) error {
+	return editVaultInternal(vaultFile, false)
+}
+
+func EditVaultWithPasswordChange(vaultFile string) error {
+	return editVaultInternal(vaultFile, true)
+}
+
+func editVaultInternal(vaultFile string, changePassword bool) error {
 	vd, err := readVaultFile(vaultFile)
 	if err != nil {
 		return fmt.Errorf("error reading vault: %w", err)
@@ -151,6 +160,17 @@ func EditVault(vaultFile string) error {
 	header := fmt.Sprintf("$VAULTINO;1.2;AES256-GCM;argon2id;name=%s;type=%s;user=%s;time=%s",
 		name, fileType, user, timestamp)
 
+	// Determine which password to use for re-encryption
+	encryptPassword := password
+	if changePassword {
+		fmt.Println("Enter new password for the vault:")
+		newPassword, err := readPassword()
+		if err != nil {
+			return fmt.Errorf("error reading new password: %w", err)
+		}
+		encryptPassword = newPassword
+	}
+
 	// Re-encrypt with new salt and nonce
 	salt := make([]byte, saltSize)
 	if _, err := rand.Read(salt); err != nil {
@@ -162,7 +182,7 @@ func EditVault(vaultFile string) error {
 		return fmt.Errorf("error generating nonce: %w", err)
 	}
 
-	ciphertext, err := encrypt(editedContent, password, salt, nonce)
+	ciphertext, err := encrypt(editedContent, encryptPassword, salt, nonce)
 	if err != nil {
 		return err
 	}
@@ -297,19 +317,30 @@ func extractValue(data []byte, key, fileType string) (string, error) {
 }
 
 func getFromYAML(data []byte, key string) (string, error) {
-	var m map[string]interface{}
-	if err := yaml.Unmarshal(data, &m); err != nil {
+	// Convert YAML to JSON first, then use gjson for consistent parsing
+	var yamlData interface{}
+	if err := yaml.Unmarshal(data, &yamlData); err != nil {
 		return "", fmt.Errorf("error parsing YAML: %w", err)
 	}
-	return getValueFromMap(m, key)
+
+	jsonData, err := json.Marshal(yamlData)
+	if err != nil {
+		return "", fmt.Errorf("error converting YAML to JSON: %w", err)
+	}
+
+	return getValueUsingGjson(string(jsonData), key)
 }
 
 func getFromJSON(data []byte, key string) (string, error) {
-	var m map[string]interface{}
-	if err := json.Unmarshal(data, &m); err != nil {
-		return "", fmt.Errorf("error parsing JSON: %w", err)
+	return getValueUsingGjson(string(data), key)
+}
+
+func getValueUsingGjson(jsonStr string, key string) (string, error) {
+	result := gjson.Get(jsonStr, key)
+	if !result.Exists() {
+		return "", fmt.Errorf("key %s not found", key)
 	}
-	return getValueFromMap(m, key)
+	return result.String(), nil
 }
 
 func getFromENV(data []byte, key string) (string, error) {
@@ -319,13 +350,6 @@ func getFromENV(data []byte, key string) (string, error) {
 		if strings.HasPrefix(line, key+"=") {
 			return strings.TrimPrefix(line, key+"="), nil
 		}
-	}
-	return "", fmt.Errorf("key %s not found", key)
-}
-
-func getValueFromMap(m map[string]interface{}, key string) (string, error) {
-	if val, ok := m[key]; ok {
-		return fmt.Sprintf("%v", val), nil
 	}
 	return "", fmt.Errorf("key %s not found", key)
 }
