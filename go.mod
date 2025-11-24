@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.13
 	github.com/atotto/clipboard v0.1.4
 	github.com/dop251/goja v0.0.0-20251008123653-cf18d89f3cf6
-	github.com/go-git/go-git/v5 v5.16.3
+	github.com/go-git/go-git/v5 v5.16.4
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/prometheus/client_golang v1.23.2
@@ -17,6 +17,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/shirou/gopsutil/v3 v3.24.5
 	github.com/spf13/cobra v1.10.1
+	github.com/tidwall/gjson v1.18.0
 	golang.org/x/crypto v0.43.0
 	golang.org/x/oauth2 v0.32.0
 	golang.org/x/term v0.36.0
@@ -103,7 +104,6 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.7 // indirect
 	github.com/skeema/knownhosts v1.3.2 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	github.com/tidwall/gjson v1.18.0 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
