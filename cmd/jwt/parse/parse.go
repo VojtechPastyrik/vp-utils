@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/jwt"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/jwt"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	jwtlib "github.com/golang-jwt/jwt/v4"
 	"github.com/spf13/cobra"
 )

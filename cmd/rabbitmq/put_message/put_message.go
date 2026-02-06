@@ -1,9 +1,9 @@
 package put_message
 
 import (
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	rabbitmqUtisl "github.com/VojtechPastyrik/vp-utils/utils/rabbitmq"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/rabbitmq"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	rabbitmqUtisl "github.com/VojtechPastyrik/vpd/utils/rabbitmq"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/cobra"
 )
@@ -27,7 +27,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"pm"},
 	Short:   "Put a message to RabbitMQ server",
 	Long:    "Put a message to RabbitMQ server. It will connect to the server and send a message to the specified exchange and routing key",
-	Example: "vp-utils rabbitmq put-message --host localhost --port 5672 --user guest --password guest --vhost / --exchange my_exchange --routing-key my_routing_key --message '{\"message\": \"Hello RabbitMQ! This is default test message\"}'",
+	Example: "vpd rabbitmq put-message --host localhost --port 5672 --user guest --password guest --vhost / --exchange my_exchange --routing-key my_routing_key --message '{\"message\": \"Hello RabbitMQ! This is default test message\"}'",
 	Run: func(cmd *cobra.Command, args []string) {
 		putMessage(FlagHost, FlagPort, FlagUser, FlagPassword, FlagVirtualHost, FlagExchange, FlagRoutingKey, FlagSsl, FlagSslCert, FlagSslKey)
 	},

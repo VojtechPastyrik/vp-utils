@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/memory"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/memory"
 	"github.com/spf13/cobra"
 )
 

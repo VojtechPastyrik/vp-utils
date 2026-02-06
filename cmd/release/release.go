@@ -7,17 +7,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	"github.com/VojtechPastyrik/vpd/cmd/root"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	git "github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 )
 
 var Cmd = &cobra.Command{
 	Use:     "release",
-	Short:   "Release vp-utils",
-	Long:    "Release vp-utils provides command to release vp-utils.",
-	Example: `vp-utils release -`,
+	Short:   "Release vpd",
+	Long:    "Release vpd provides command to release vpd.",
+	Example: `vpd release -`,
 	Run: func(cmd *cobra.Command, args []string) {
 		releaseProject()
 	},

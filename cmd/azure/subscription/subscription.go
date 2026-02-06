@@ -8,8 +8,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2017-03-09/resources/mgmt/subscriptions"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/azure"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/azure"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
 )
 

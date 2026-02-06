@@ -3,11 +3,12 @@ package ip
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	"github.com/spf13/cobra"
 	"io"
 	"net"
 	"net/http"
+
+	"github.com/VojtechPastyrik/vpd/cmd/root"
+	"github.com/spf13/cobra"
 )
 
 var Cmd = &cobra.Command{

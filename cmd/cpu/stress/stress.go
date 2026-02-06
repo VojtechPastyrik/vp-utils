@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/cpu"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/cpu"
 	"github.com/spf13/cobra"
 )
 

@@ -16,7 +16,7 @@ import (
 	"syscall"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/api"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/api"
 	"github.com/spf13/cobra"
 	"golang.org/x/oauth2/clientcredentials"
 )
@@ -56,15 +56,15 @@ var Cmd = &cobra.Command{
 Supports REST and SOAP, multiple HTTP methods, authentication via Basic Auth, OAuth2, or Bearer token.
 Allows defining the number of concurrent requests, total requests, or test duration.`,
 	Example: `  # Simple GET request with 10 concurrent users, total 1000 requests
-  vp-utils api load-test --url https://api.example.com/endpoint --concurrency 10 --requests 1000
+  vpd api load-test --url https://api.example.com/endpoint --concurrency 10 --requests 1000
 
   # POST request with JSON body and OAuth2 authentication
-  vp-utils api load-test --url https://api.example.com/endpoint --method POST --content-type "application/json" \
+  vpd api load-test --url https://api.example.com/endpoint --method POST --content-type "application/json" \
     --data '{"key": "value"}' --auth-type oauth --oauth-client-id "client_id" --oauth-secret "secret" \
     --oauth-token-url "https://auth.example.com/token"
 
   # SOAP request with Basic authentication
-  vp-utils api load-test --url https://api.example.com/soap --method POST --content-type "text/xml" \
+  vpd api load-test --url https://api.example.com/soap --method POST --content-type "text/xml" \
     --data-file request.xml --auth-type basic --username "user" --password "pass"`,
 	Run: func(cmd *cobra.Command, args []string) {
 		runLoadTest()

@@ -2,7 +2,8 @@ package info
 
 import (
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/memory"
+
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/memory"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/spf13/cobra"
 )

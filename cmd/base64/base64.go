@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	"github.com/VojtechPastyrik/vpd/cmd/root"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
 )
 

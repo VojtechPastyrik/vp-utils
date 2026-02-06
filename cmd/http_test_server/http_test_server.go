@@ -2,13 +2,14 @@ package ip
 
 import (
 	"fmt"
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	"github.com/VojtechPastyrik/vp-utils/version"
-	"github.com/spf13/cobra"
 	"io"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/VojtechPastyrik/vpd/cmd/root"
+	"github.com/VojtechPastyrik/vpd/version"
+	"github.com/spf13/cobra"
 )
 
 var FlagPort string
@@ -73,11 +74,11 @@ func runHttpTestServer(port string, logHeaders, logBody bool) {
 			fmt.Printf("Body=%s", bodyStr)
 		}
 
-		fmt.Fprintf(w, "[vp-utils "+version.Version+"] Test HTTP Server! %s %s \n", hostname, port)
+		fmt.Fprintf(w, "[vpd "+version.Version+"] Test HTTP Server! %s %s \n", hostname, port)
 		fmt.Println()
 	})
 
-	fmt.Println("[vp-utils "+version.Version+"] Server started on 0.0.0.0:"+port+", see http://127.0.0.1:"+port, ", logging headers:", logHeaders, "logging body:", logBody)
+	fmt.Println("[vpd "+version.Version+"] Server started on 0.0.0.0:"+port+", see http://127.0.0.1:"+port, ", logging headers:", logHeaders, "logging body:", logBody)
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		fmt.Println("Error starting server:", err)
 	}

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/k8s"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	k8sutils "github.com/VojtechPastyrik/vp-utils/utils/k8s"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/k8s"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	k8sutils "github.com/VojtechPastyrik/vpd/utils/k8s"
 	"github.com/spf13/cobra"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

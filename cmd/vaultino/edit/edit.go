@@ -1,9 +1,9 @@
 package edit
 
 import (
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/vaultino"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	vaultinoUtils "github.com/VojtechPastyrik/vp-utils/utils/vaultino"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/vaultino"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	vaultinoUtils "github.com/VojtechPastyrik/vpd/utils/vaultino"
 
 	"github.com/spf13/cobra"
 )
@@ -15,7 +15,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"e"},
 	Short:   "Edit Vaultino encrypted file",
 	Long:    "Edit Vaultino encrypted file. It will prompt for a password, decrypt the file, open it in the default editor, and re-encrypt it upon saving.",
-	Example: "vp-utils vaultino edit <path_tp_file>\nvp-utils vaultino edit --change-password <path_tp_file>",
+	Example: "vpd vaultino edit <path_tp_file>\nvpd vaultino edit --change-password <path_tp_file>",
 	Run: func(cmd *cobra.Command, args []string) {
 		if args == nil || len(args) < 1 {
 			logger.Fatalf("path to the encrypted file is required as the first argument")

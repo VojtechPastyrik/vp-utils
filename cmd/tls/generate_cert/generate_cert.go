@@ -13,8 +13,8 @@ import (
 	"os"
 	"time"
 
-	tls_cmd "github.com/VojtechPastyrik/vp-utils/cmd/tls"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	tls_cmd "github.com/VojtechPastyrik/vpd/cmd/tls"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
 )
 

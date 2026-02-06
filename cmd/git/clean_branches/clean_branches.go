@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/git"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/git"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
 )
 

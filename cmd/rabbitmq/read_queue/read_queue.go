@@ -5,9 +5,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	rabbitmqUtisl "github.com/VojtechPastyrik/vp-utils/utils/rabbitmq"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/rabbitmq"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	rabbitmqUtisl "github.com/VojtechPastyrik/vpd/utils/rabbitmq"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +28,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"rq"},
 	Short:   "Read messages from RabbitMQ queue",
 	Long:    "Read messages from RabbitMQ queue. It will connect to the server and read messages from the specified queue",
-	Example: "vp-utils rabbitmq read-queue -host localhost --port 5672 --user guest --password guest --vhost / --queue my_queue",
+	Example: "vpd rabbitmq read-queue -host localhost --port 5672 --user guest --password guest --vhost / --queue my_queue",
 	Run: func(cmd *cobra.Command, args []string) {
 		readQueue(FlagHost, FlagPort, FlagUser, FlagPassword, FlagVirtualHost, FlagQueue, FlagSsl, FlagSslCert, FlagSslKey)
 	},

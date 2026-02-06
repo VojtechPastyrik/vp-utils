@@ -1,7 +1,7 @@
 package vaultino
 
 import (
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	"github.com/VojtechPastyrik/vpd/cmd/root"
 	"github.com/spf13/cobra"
 )
 

@@ -4,8 +4,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/base64"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/base64"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )

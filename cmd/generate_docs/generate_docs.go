@@ -3,7 +3,7 @@ package generate_docs
 import (
 	"os"
 
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
+	"github.com/VojtechPastyrik/vpd/cmd/root"
 	"github.com/spf13/cobra"
 	"github.com/spf13/cobra/doc"
 )

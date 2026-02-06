@@ -3,9 +3,9 @@ package get
 import (
 	"fmt"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/vaultino"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	vaultinoUtils "github.com/VojtechPastyrik/vp-utils/utils/vaultino"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/vaultino"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	vaultinoUtils "github.com/VojtechPastyrik/vpd/utils/vaultino"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +19,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"g"},
 	Short:   "Get value from Vaultino encrypted file",
 	Long:    "Get value from Vaultino encrypted file for the provided key. It will prompt for a password and retrieve the value. Supported file formats are YAML and JSON.",
-	Example: "vp-utils vaultino get <path_to_file> -k <key>",
+	Example: "vpd vaultino get <path_to_file> -k <key>",
 	Run: func(cmd *cobra.Command, args []string) {
 		if args == nil || len(args) < 1 {
 			logger.Fatalf("path to the encrypted file is required as the first argument")

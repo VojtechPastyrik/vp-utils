@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/youtrack"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/youtrack"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -26,7 +26,7 @@ var Cmd = &cobra.Command{
 	Use:     "track-time",
 	Short:   "Track time spent on tasks in YouTrack",
 	Long:    `Track time spent on tasks in YouTrack.`,
-	Example: `vp-utils youtrack track-time --token <token> --url <url> --issue-id <issue-id> --note "Worked on feature X" --date "2023-10-01" --minutes 30`,
+	Example: `vpd youtrack track-time --token <token> --url <url> --issue-id <issue-id> --note "Worked on feature X" --date "2023-10-01" --minutes 30`,
 	Args:    cobra.NoArgs,
 	Aliases: []string{"tt"},
 	Run: func(cmd *cobra.Command, args []string) {

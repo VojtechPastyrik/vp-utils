@@ -2,10 +2,11 @@ package benchmark
 
 import (
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/cpu"
-	"github.com/spf13/cobra"
 	"runtime"
 	"time"
+
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/cpu"
+	"github.com/spf13/cobra"
 )
 
 var (

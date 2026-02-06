@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/VojtechPastyrik/vp-utils/cmd/root"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	"github.com/VojtechPastyrik/vp-utils/version"
+	"github.com/VojtechPastyrik/vpd/cmd/root"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	"github.com/VojtechPastyrik/vpd/version"
 	"github.com/dop251/goja"
 	jwtlib "github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
@@ -261,7 +261,7 @@ func runMockHTTPServer(port int, configPath string) {
 	}
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "[vp-utils "+version.Version+"] Hello from Mock server! You can access the configured routes.\n")
+		fmt.Fprintf(w, "[vpd "+version.Version+"] Hello from Mock server! You can access the configured routes.\n")
 	})
 
 	go func() {

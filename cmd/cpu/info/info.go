@@ -2,10 +2,11 @@ package info
 
 import (
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/cpu"
+	"runtime"
+
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/cpu"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/spf13/cobra"
-	"runtime"
 )
 
 var Cmd = &cobra.Command{

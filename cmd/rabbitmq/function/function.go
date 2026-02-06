@@ -2,12 +2,13 @@ package function
 
 import (
 	"fmt"
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
-	rabbitmqUtisl "github.com/VojtechPastyrik/vp-utils/utils/rabbitmq"
+	"time"
+
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/rabbitmq"
+	rabbitmqUtisl "github.com/VojtechPastyrik/vpd/utils/rabbitmq"
 	"github.com/pterm/pterm"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 var (

@@ -12,9 +12,9 @@ import (
 	"syscall"
 	"time"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/rabbitmq"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
-	rabbitmqUtisl "github.com/VojtechPastyrik/vp-utils/utils/rabbitmq"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/rabbitmq"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	rabbitmqUtisl "github.com/VojtechPastyrik/vpd/utils/rabbitmq"
 	"github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/cobra"
 )

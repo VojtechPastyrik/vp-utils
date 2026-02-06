@@ -1,4 +1,4 @@
-module github.com/VojtechPastyrik/vp-utils
+module github.com/VojtechPastyrik/vpd
 
 go 1.24.0
 

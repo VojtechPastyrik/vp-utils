@@ -1,11 +1,11 @@
 version: 2
-project_name: vp-utils
+project_name: vpd
 before:
   hooks:
     - rm -rf ./dist
     - go mod tidy
 builds:
-  - binary: vp-utils
+  - binary: vpd
     goos:
       - linux
       - darwin
@@ -30,16 +30,16 @@ brews:
     repository:
         owner: VojtechPastyrik
         name: homebrew-tap
-    homepage: "https://github.com/VojtechPastyrik/vp-utils"
-    url_template: "https://github.com/VojtechPastyrik/vp-utils/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    homepage: "https://github.com/VojtechPastyrik/vpd"
+    url_template: "https://github.com/VojtechPastyrik/vpd/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     directory: Formula
-    caveats: "How to use this binary: https://github.com/VojtechPastyrik/vp-utils"
+    caveats: "How to use this binary: https://github.com/VojtechPastyrik/vpd"
     description: "Vojtech Pastyrik Utils"
     install: |
-      bin.install "vp-utils"
+      bin.install "vpd"
 
     test: |
-      system "#{bin}/vp-utils version"
+      system "#{bin}/vpd version"
 
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
@@ -49,44 +49,44 @@ dockers:
   - goos: linux
     goarch: amd64
     image_templates:
-      - "vojtechpastyrik/vp-utils:{{ .Tag }}"
-      - "vojtechpastyrik/vp-utils:latest"
+      - "vojtechpastyrik/vpd:{{ .Tag }}"
+      - "vojtechpastyrik/vpd:latest"
     dockerfile: Dockerfile.goreleaser
     ids:
-      - vp-utils
+      - vpd
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vp-utils"
+      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vpd"
       - "--label=org.label-schema.schema-version=1.0"
       - "--label=org.label-schema.version={{.Version}}"
       - "--label=org.label-schema.name={{.ProjectName}}"
       - "--label=com.github.actions.name={{.ProjectName}}"
-      - "--label=repository=https://github.com/VojtechPastyrik/vp-utils"
+      - "--label=repository=https://github.com/VojtechPastyrik/vpd"
       - "--label=maintainer=Vojtech Pastyrik <vojtech@pastyrik.dev>"
   - goos: linux
     goarch: arm64
     image_templates:
-      - "vojtechpastyrik/vp-utils:{{ .Tag }}-arm64v8"
-      - "vojtechpastyrik/vp-utils:latest-arm64v8"
+      - "vojtechpastyrik/vpd:{{ .Tag }}-arm64v8"
+      - "vojtechpastyrik/vpd:latest-arm64v8"
     dockerfile: Dockerfile.goreleaser.arm64v8
     ids:
-      - vp-utils
+      - vpd
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vp-utils"
+      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vpd"
       - "--label=org.label-schema.schema-version=1.0"
       - "--label=org.label-schema.version={{.Version}}"
       - "--label=org.label-schema.name={{.ProjectName}}"
       - "--label=com.github.actions.name={{.ProjectName}}"
-      - "--label=repository=https://github.com/VojtechPastyrik/vp-utils"
+      - "--label=repository=https://github.com/VojtechPastyrik/vpd"
       - "--label=maintainer=Vojtech Pastyrik <vojtech@pastyrik.dev>"
 
 
@@ -96,44 +96,44 @@ changelog:
       - '^VERSION'
 
 nfpms:
-  - id: vp-utils-deb
-    package_name: vp-utils
+  - id: vpd-deb
+    package_name: vpd
     formats:
       - deb
     maintainer: "Vojtech Pastyrik <vojtech@pastyrik.dev>"
     description: "Vojtech Pastyrik Utils"
-    homepage: "https://github.com/VojtechPastyrik/vp-utils"
+    homepage: "https://github.com/VojtechPastyrik/vpd"
     license: "MIT"
     vendor: "Vojtech Pastyrik"
     section: "utils"
     priority: "optional"
     conflicts:
-      - vp-utils-old
+      - vpd-old
     replaces:
-      - vp-utils-old
+      - vpd-old
     provides:
-      - vp-utils
+      - vpd
     dependencies:
       - libc6
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
     bindir: /usr/bin
-  - id: vp-utils-rpm
-    package_name: vp-utils
+  - id: vpd-rpm
+    package_name: vpd
     formats:
       - rpm
     maintainer: "Vojtech Pastyrik <vojtech@pastyrik.dev>"
     description: "Vojtech Pastyrik Utils"
-    homepage: "https://github.com/VojtechPastyrik/vp-utils"
+    homepage: "https://github.com/VojtechPastyrik/vpd"
     license: "MIT"
     vendor: "Vojtech Pastyrik"
     section: "utils"
     priority: "optional"
     conflicts:
-      - vp-utils-old
+      - vpd-old
     replaces:
-      - vp-utils-old
+      - vpd-old
     provides:
-      - vp-utils
+      - vpd
     dependencies:
       - libc6
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.rpm"

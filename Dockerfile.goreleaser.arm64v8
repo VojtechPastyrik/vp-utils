@@ -1,2 +1,2 @@
 FROM arm64v8/debian:12-slim
-COPY vp-utils /usr/local/bin
+COPY vpd /usr/local/bin

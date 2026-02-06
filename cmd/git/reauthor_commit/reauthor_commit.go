@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/git"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/git"
 	"github.com/spf13/cobra"
 )
 

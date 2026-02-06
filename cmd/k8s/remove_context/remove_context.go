@@ -1,8 +1,8 @@
 package remove_context
 
 import (
-	parent_cmd "github.com/VojtechPastyrik/vp-utils/cmd/k8s"
-	"github.com/VojtechPastyrik/vp-utils/pkg/logger"
+	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/k8s"
+	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/tools/clientcmd"
 )
