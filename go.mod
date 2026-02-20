@@ -1,6 +1,6 @@
 module github.com/VojtechPastyrik/vpd
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/Azure/azure-sdk-for-go v68.0.0+incompatible
