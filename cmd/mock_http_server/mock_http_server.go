@@ -261,7 +261,7 @@ func runMockHTTPServer(port int, configPath string) {
 	}
 
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "[vpd "+version.Version+"] Hello from Mock server! You can access the configured routes.\n")
+		fmt.Fprintf(w, "[vpd %s] Hello from Mock server! You can access the configured routes.\n", version.Version)
 	})
 
 	go func() {
