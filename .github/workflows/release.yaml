@@ -24,6 +24,11 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: stable
+          cache: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
       - name: Install Cloudsmith CLI
         run: pip install --upgrade cloudsmith-cli
       - name: Set up QEMU
@@ -47,7 +52,7 @@ jobs:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           # 'latest', 'nightly', or a semver
-          version: ${{ env.GITHUB_REF_NAME }}
+          version: "~> 2"
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
