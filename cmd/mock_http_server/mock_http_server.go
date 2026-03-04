@@ -25,7 +25,7 @@ import (
 )
 
 var FlagConfigPath string
-var FlagFetExampleConfig bool
+var FlagGetExampleConfig bool
 var FlagPort int
 
 var Cmd = &cobra.Command{
@@ -35,7 +35,7 @@ var Cmd = &cobra.Command{
 
 	Aliases: []string{"mock-server", "mhs"},
 	Run: func(cmd *cobra.Command, args []string) {
-		if FlagFetExampleConfig {
+		if FlagGetExampleConfig {
 			generateConfigExample()
 			return
 		}
@@ -46,7 +46,7 @@ var Cmd = &cobra.Command{
 func init() {
 	root.RootCmd.AddCommand(Cmd)
 	Cmd.Flags().StringVarP(&FlagConfigPath, "config", "c", "", "Path to the configuration file for the mock HTTP server")
-	Cmd.Flags().BoolVarP(&FlagFetExampleConfig, "example-config", "e", false, "Fetch example configuration for the mock HTTP server")
+	Cmd.Flags().BoolVarP(&FlagGetExampleConfig, "example-config", "e", false, "Fetch example configuration for the mock HTTP server")
 	Cmd.Flags().IntVarP(&FlagPort, "port", "p", 8080, "Port on which the mock HTTP server will run")
 	prometheus.MustRegister(httpRequestsTotal, httpRequestDuration)
 }
