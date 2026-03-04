@@ -3,7 +3,11 @@
     "allow": [
       "Bash(go build:*)",
       "Bash(go run:*)",
-      "Bash(timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5673')"
+      "Bash(timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5673')",
+      "WebFetch(domain:goreleaser.com)",
+      "Bash(grep -r \"unseal\\\\|init\" /Users/vojtechpastyrik/GolandProjects/vp-utils/cmd/vault --include=\"*.go\" 2>/dev/null | head -50)",
+      "Bash(go mod tidy && go build ./...)",
+      "Bash(go vet ./...)"
     ],
     "deny": [],
     "ask": []
