@@ -6,8 +6,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2017-03-09/resources/mgmt/subscriptions"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/azure"
 	"github.com/VojtechPastyrik/vpd/pkg/logger"
 	"github.com/spf13/cobra"
@@ -47,21 +45,13 @@ func init() {
 }
 
 func subscription(changeSub, allSubs bool, arg string) {
-	// Use environment variables for authentication
-	authorizer, err := auth.NewAuthorizerFromCLI()
-	handleError(err)
-
-	// Create a client
-	subscriptionsClient := subscriptions.NewClient()
-	subscriptionsClient.Authorizer = authorizer
-
 	if !changeSub {
-		listSubscriptions(subscriptionsClient, allSubs)
+		listSubscriptions(allSubs)
 		return
 	} else {
 		if arg == "" {
 			// If no argument is provided, list subscriptions and prompt for selection
-			listSubscriptions(subscriptionsClient, allSubs)
+			listSubscriptions(allSubs)
 			fmt.Print("Enter the subscription ID to switch to: ")
 			fmt.Scanln(&arg)
 		}
@@ -71,7 +61,7 @@ func subscription(changeSub, allSubs bool, arg string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		err = cmd.Run()
+		err := cmd.Run()
 		if err != nil {
 			logger.Fatalf("error changing subscription: %v", err)
 		} else {
@@ -81,7 +71,7 @@ func subscription(changeSub, allSubs bool, arg string) {
 	}
 }
 
-func listSubscriptions(subscriptionsClient subscriptions.Client, all bool) {
+func listSubscriptions(all bool) {
 	//GET active subscription ID
 	cmdActive := exec.Command("az", "account", "show", "--query", "id", "-o", "tsv")
 	activeID, err := cmdActive.Output()
@@ -121,11 +111,5 @@ func listSubscriptions(subscriptionsClient subscriptions.Client, all bool) {
 	err = cmd.Run()
 	if err != nil {
 		logger.Fatalf("error listing subscriptions: %v", err)
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		logger.Fatalf("%v", err)
 	}
 }

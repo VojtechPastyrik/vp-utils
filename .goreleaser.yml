@@ -93,8 +93,6 @@ nfpms:
       - vpd-old
     provides:
       - vpd
-    dependencies:
-      - libc6
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.deb"
     bindir: /usr/bin
   - id: vpd-rpm
@@ -114,7 +112,5 @@ nfpms:
       - vpd-old
     provides:
       - vpd
-    dependencies:
-      - libc6
     file_name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}.rpm"
     bindir: /usr/bin
