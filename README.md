@@ -30,12 +30,10 @@ sudo dnf install vpd
 
 You can also run vpd in a Docker container. The image is available on Docker Hub:
 see [vojtechpastyrik/vpd](https://hub.docker.com/r/vojtechpastyrik/vpd).
-Image is built automatically from the latest release, so you can use it without worrying about updates. You can find two
-versions of the image: amd64 and arm64.
-To run the container, use the following command:
+The image is a multi-architecture manifest supporting both amd64 and arm64.
 
 ```bash
-docker run --rm vojtechpastyrik/vpd:latest vpd
+docker run --rm vojtechpastyrik/vpd:latest version
 ```
 
 # Release

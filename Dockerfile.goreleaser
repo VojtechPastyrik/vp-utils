@@ -1,2 +1,4 @@
-FROM debian:12-slim
-COPY vpd /usr/local/bin
+FROM gcr.io/distroless/static-debian12
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/vpd /usr/local/bin/
+ENTRYPOINT ["vpd"]

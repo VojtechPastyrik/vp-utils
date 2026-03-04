@@ -1,2 +1,0 @@
-FROM arm64v8/debian:12-slim
-COPY vpd /usr/local/bin

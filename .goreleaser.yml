@@ -24,70 +24,50 @@ release:
 universal_binaries:
   - replace: true
 
-brews:
-  -
-    name: "{{ .ProjectName }}"
+homebrew_casks:
+  - name: "{{ .ProjectName }}"
+    binaries:
+      - vpd
     repository:
-        owner: VojtechPastyrik
-        name: homebrew-tap
+      owner: VojtechPastyrik
+      name: homebrew-tap
+    directory: Casks
     homepage: "https://github.com/VojtechPastyrik/vpd"
-    url_template: "https://github.com/VojtechPastyrik/vpd/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    directory: Formula
+    url:
+      template: "https://github.com/VojtechPastyrik/vpd/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     caveats: "How to use this binary: https://github.com/VojtechPastyrik/vpd"
     description: "Vojtech Pastyrik Utils"
-    install: |
-      bin.install "vpd"
-
-    test: |
-      system "#{bin}/vpd version"
 
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
   algorithm: sha256
 
-dockers:
-  - goos: linux
-    goarch: amd64
-    image_templates:
-      - "vojtechpastyrik/vpd:{{ .Tag }}"
-      - "vojtechpastyrik/vpd:latest"
+dockers_v2:
+  - id: vpd
     dockerfile: Dockerfile.goreleaser
     ids:
       - vpd
-    build_flag_templates:
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vpd"
-      - "--label=org.label-schema.schema-version=1.0"
-      - "--label=org.label-schema.version={{.Version}}"
-      - "--label=org.label-schema.name={{.ProjectName}}"
-      - "--label=com.github.actions.name={{.ProjectName}}"
-      - "--label=repository=https://github.com/VojtechPastyrik/vpd"
-      - "--label=maintainer=Vojtech Pastyrik <vojtech@pastyrik.dev>"
-  - goos: linux
-    goarch: arm64
-    image_templates:
-      - "vojtechpastyrik/vpd:{{ .Tag }}-arm64v8"
-      - "vojtechpastyrik/vpd:latest-arm64v8"
-    dockerfile: Dockerfile.goreleaser.arm64v8
-    ids:
-      - vpd
-    build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.title={{.ProjectName}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-      - "--label=org.opencontainers.image.source=https://github.com/VojtechPastyrik/vpd"
-      - "--label=org.label-schema.schema-version=1.0"
-      - "--label=org.label-schema.version={{.Version}}"
-      - "--label=org.label-schema.name={{.ProjectName}}"
-      - "--label=com.github.actions.name={{.ProjectName}}"
-      - "--label=repository=https://github.com/VojtechPastyrik/vpd"
-      - "--label=maintainer=Vojtech Pastyrik <vojtech@pastyrik.dev>"
+    images:
+      - "vojtechpastyrik/vpd"
+      - "ghcr.io/vojtechpastyrik/vpd"
+    tags:
+      - "{{ .Tag }}"
+      - "latest"
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.title": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "https://github.com/VojtechPastyrik/vpd"
+      "org.label-schema.schema-version": "1.0"
+      "org.label-schema.version": "{{.Version}}"
+      "org.label-schema.name": "{{.ProjectName}}"
+      "com.github.actions.name": "{{.ProjectName}}"
+      "repository": "https://github.com/VojtechPastyrik/vpd"
+      "maintainer": "Vojtech Pastyrik <vojtech@pastyrik.dev>"
 
 
 changelog:
