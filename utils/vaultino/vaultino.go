@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -112,7 +111,7 @@ func editVaultInternal(vaultFile string, changePassword bool) error {
 		return err
 	}
 
-	tmpFile, err := ioutil.TempFile("", "myvault-edit-*.tmp")
+	tmpFile, err := os.CreateTemp("", "myvault-edit-*.tmp")
 	if err != nil {
 		return fmt.Errorf("error creating temporary file: %w", err)
 	}

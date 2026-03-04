@@ -10,7 +10,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"vt"},
 	Short:   "Vaultino is custom implementation of Vault similar to Ansible Vault",
 	Long:    "Vaultino is custom implementation of Vault similar to Ansible Vault. It allows you to encrypt and decrypt files using a password.",
-	Example: "vaultino valutino --help",
+	Example: "vpd vaultino --help",
 }
 
 func init() {

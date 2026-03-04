@@ -3,7 +3,6 @@ package allocpatterns
 import (
 	"fmt"
 	"math/rand"
-	"time"
 
 	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/memory"
 	"github.com/spf13/cobra"
@@ -58,7 +57,6 @@ func randomFreePattern() {
 	for i := 0; i < iterations; i++ {
 		blocks[i] = make([]byte, blockSize)
 	}
-	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < iterations/2; i++ {
 		idx := rand.Intn(iterations)
 		blocks[idx] = nil

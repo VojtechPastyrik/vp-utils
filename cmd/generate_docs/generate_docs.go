@@ -1,6 +1,7 @@
 package generate_docs
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/VojtechPastyrik/vpd/cmd/root"
@@ -16,13 +17,13 @@ var Cmd = &cobra.Command{
 	Args:    cobra.NoArgs,
 	Run: func(c *cobra.Command, args []string) {
 		path := "./cobra-docs/"
-		err := os.MkdirAll(path, os.ModePerm)
-		if err != nil {
-			panic(err)
+		if err := os.MkdirAll(path, os.ModePerm); err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating docs directory: %v\n", err)
+			os.Exit(1)
 		}
-		err = doc.GenMarkdownTree(root.RootCmd, path)
-		if err != nil {
-			panic(err)
+		if err := doc.GenMarkdownTree(root.RootCmd, path); err != nil {
+			fmt.Fprintf(os.Stderr, "Error generating docs: %v\n", err)
+			os.Exit(1)
 		}
 	},
 }

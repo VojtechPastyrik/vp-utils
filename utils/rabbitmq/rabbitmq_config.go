@@ -77,7 +77,7 @@ func newTLSConfig(clientCertPath, clientKeyPath string) (*tls.Config, error) {
 	} else {
 		certOut, keyOut, err := generateSelfSignedCert()
 		if err != nil {
-			return nil, fmt.Errorf("failed to generate Self signed ertificate: %v", err)
+			return nil, fmt.Errorf("failed to generate self-signed certificate: %v", err)
 		}
 		clientCert, err = tls.X509KeyPair(certOut, keyOut)
 		if err != nil {
