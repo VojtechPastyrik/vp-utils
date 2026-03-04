@@ -1,4 +1,4 @@
-package jwt
+package git
 
 import (
 	"github.com/VojtechPastyrik/vpd/cmd/root"

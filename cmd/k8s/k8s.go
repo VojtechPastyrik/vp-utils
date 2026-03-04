@@ -1,4 +1,4 @@
-package vault
+package k8s
 
 import (
 	"github.com/VojtechPastyrik/vpd/cmd/root"

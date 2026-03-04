@@ -1,4 +1,4 @@
-package jwt
+package base64
 
 import (
 	"encoding/base64"

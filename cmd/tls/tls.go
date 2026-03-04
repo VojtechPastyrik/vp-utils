@@ -1,4 +1,4 @@
-package vault
+package tls
 
 import (
 	"github.com/VojtechPastyrik/vpd/cmd/root"

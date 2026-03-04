@@ -1,4 +1,4 @@
-package ip
+package http_test_server
 
 import (
 	"fmt"

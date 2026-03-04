@@ -1,4 +1,4 @@
-package cpu
+package memory
 
 import (
 	"github.com/VojtechPastyrik/vpd/cmd/root"
