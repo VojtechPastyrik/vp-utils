@@ -26,19 +26,17 @@ release:
 universal_binaries:
   - replace: true
 
-homebrew_casks:
+brews:
   - name: "{{ .ProjectName }}"
-    binaries:
-      - vpd
     repository:
       owner: VojtechPastyrik
       name: homebrew-tap
-    directory: Casks
+    directory: Formula
     homepage: "https://github.com/VojtechPastyrik/vpd"
-    url:
-      template: "https://github.com/VojtechPastyrik/vpd/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    caveats: "How to use this binary: https://github.com/VojtechPastyrik/vpd"
     description: "Vojtech Pastyrik Utils"
+    license: "MIT"
+    install: |
+      bin.install "vpd"
 
 checksum:
   name_template: "{{ .ProjectName }}_checksums.txt"
