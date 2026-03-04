@@ -43,6 +43,7 @@ import (
 	_ "github.com/VojtechPastyrik/vpd/cmd/tls/parse_file"
 	_ "github.com/VojtechPastyrik/vpd/cmd/vault"
 	_ "github.com/VojtechPastyrik/vpd/cmd/vault/init_unseal"
+	_ "github.com/VojtechPastyrik/vpd/cmd/vault/unseal"
 	_ "github.com/VojtechPastyrik/vpd/cmd/vaultino"
 	_ "github.com/VojtechPastyrik/vpd/cmd/vaultino/create"
 	_ "github.com/VojtechPastyrik/vpd/cmd/vaultino/decrypt"

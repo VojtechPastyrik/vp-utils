@@ -1,15 +1,14 @@
 package init_unseal
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 
 	parent_cmd "github.com/VojtechPastyrik/vpd/cmd/vault"
 	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	vault_utils "github.com/VojtechPastyrik/vpd/utils/vault"
 	"github.com/spf13/cobra"
 )
 
@@ -73,39 +72,20 @@ func vaultInitUnseal(path, namespace string, keyShares, keyThreshold int) {
 		logger.Fatal("key threshold cannot be greater than key shares")
 	}
 
-	podNames := getPods(namespace)
+	podNames := vault_utils.GetPods(namespace)
 	if len(podNames) == 0 {
 		logger.Fatalf("no Vault pods found in namespace %s", namespace)
 	}
 	vaultKeys := vaultInit(podNames[0], path, namespace, keyShares, keyThreshold)
 
-	extractedValueKeys, treshold := extractVaultKeys(vaultKeys)
+	extractedValueKeys, threshold := vault_utils.ExtractVaultKeys(vaultKeys)
 
 	for _, podName := range podNames {
 		logger.Infof("unsealing pod %s", podName)
-		unsealPod(podName, namespace, extractedValueKeys, treshold)
+		vault_utils.UnsealPod(podName, namespace, extractedValueKeys, threshold)
 	}
 
 	logger.Infof("vault initialization and unsealing completed successfully. Keys saved to %s/vault_keys.json\n", path)
-}
-
-func getPods(namespace string) []string {
-	cmd := exec.Command("kubectl", "get", "pods", "-n", namespace, "-o", "jsonpath={.items[*].metadata.name}")
-	cmd.Env = os.Environ()
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logger.Fatalf("error executing kubectl command: %v output %s", err, string(output))
-	}
-
-	lines := strings.Split(string(output), " ")
-	var podNames []string
-	for _, line := range lines {
-		if strings.Contains(line, "vault") {
-			podNames = append(podNames, line)
-		}
-	}
-
-	return podNames
 }
 
 func vaultInit(pod, path, namespace string, keyShares, keyThreshold int) string {
@@ -124,43 +104,4 @@ func vaultInit(pod, path, namespace string, keyShares, keyThreshold int) string 
 	}
 
 	return string(output)
-}
-
-func extractVaultKeys(jsonData string) ([]string, int) {
-
-	var response struct {
-		UnsealKeysB64   []string `json:"unseal_keys_b64"`
-		UnsealThreshold int      `json:"unseal_threshold"`
-	}
-
-	err := json.Unmarshal([]byte(jsonData), &response)
-	if err != nil {
-		logger.Fatalf("error unmarshalling JSON: %v", err)
-	}
-
-	return response.UnsealKeysB64, response.UnsealThreshold
-}
-
-func unsealPod(podName, namespace string, vaultKeys []string, treshold int) {
-	for i, key := range vaultKeys {
-		if i >= treshold {
-			break
-		}
-		cmd := exec.Command("kubectl", "exec", podName, "-n", namespace, "--", "vault", "operator", "unseal", key)
-		cmd.Env = os.Environ()
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			logger.Fatalf("error unsealing pod %s with key %s: %v\nOutput: %s", podName, key, err, output)
-		}
-	}
-	waitForPodReady(podName, namespace)
-}
-
-func waitForPodReady(pod, namespace string) {
-	cmd := exec.Command("kubectl", "wait", "pod", pod, "-n", namespace, "--for=condition=Ready", "--timeout=60s")
-	cmd.Env = os.Environ()
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logger.Fatalf("error waiting for pod to be ready: %v\nOutput: %s", err, output)
-	}
 }
