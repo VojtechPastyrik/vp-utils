@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	tls_cmd "github.com/VojtechPastyrik/vpd/cmd/tls"
 	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	"github.com/VojtechPastyrik/vpd/pkg/tlsutil"
 	"github.com/spf13/cobra"
 	"software.sslmate.com/src/go-pkcs12"
 )
@@ -74,15 +74,7 @@ func loadCertificateFromP12(certFile, password string) {
 		logger.Fatalf("failed to decode P12 file: %v", err)
 	}
 
-	fmt.Printf("Subject Name: %s\n", cert.Subject)
-	fmt.Printf("Subject Common Name: %s\n", cert.Subject.CommonName)
-	fmt.Printf("Issuer Name: %s\n", cert.Issuer)
-	fmt.Printf("Issuer Common Name: %s\n", cert.Issuer.CommonName)
-	fmt.Printf("Created: %s\n", cert.NotBefore.Format(time.RFC3339))
-	fmt.Printf("Expiry: %s\n", cert.NotAfter.Format(time.RFC3339))
-	fmt.Printf("DNS Names: %v\n", cert.DNSNames)
-	fmt.Printf("IP Addresses: %v\n", cert.IPAddresses)
-	fmt.Println()
+	tlsutil.PrintCertInfo(cert)
 
 	if privateKey != nil {
 		fmt.Printf("Private Key Type: %T\n", privateKey)
@@ -127,14 +119,6 @@ func loadCertificateFromPEM(certFile, keyFile string) {
 	}
 
 	for _, cert := range certs {
-		fmt.Printf("Subject Name: %s\n", cert.Subject)
-		fmt.Printf("Subject Common Name: %s\n", cert.Subject.CommonName)
-		fmt.Printf("Issuer Name: %s\n", cert.Issuer)
-		fmt.Printf("Issuer Common Name: %s \n", cert.Issuer.CommonName)
-		fmt.Printf("Created: %s \n", cert.NotBefore.Format(time.RFC3339))
-		fmt.Printf("Expiry: %s \n", cert.NotAfter.Format(time.RFC3339))
-		fmt.Printf("DNS Names: %v\n", cert.DNSNames)
-		fmt.Printf("IP Addresses: %v\n", cert.IPAddresses)
-		fmt.Println()
+		tlsutil.PrintCertInfo(cert)
 	}
 }

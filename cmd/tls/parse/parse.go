@@ -3,14 +3,13 @@ package parse
 import (
 	"crypto/tls"
 	"crypto/x509"
-	_ "crypto/x509"
 	"encoding/pem"
 	"fmt"
 	"os"
-	"time"
 
 	tls_cmd "github.com/VojtechPastyrik/vpd/cmd/tls"
 	"github.com/VojtechPastyrik/vpd/pkg/logger"
+	"github.com/VojtechPastyrik/vpd/pkg/tlsutil"
 	"github.com/spf13/cobra"
 )
 
@@ -74,15 +73,7 @@ func printCertificateFromServer(addr, serverName, outputFile string) {
 	defer conn.Close()
 	certs := conn.ConnectionState().PeerCertificates
 	for i, cert := range certs {
-		fmt.Printf("Subject Name: %s\n", cert.Subject)
-		fmt.Printf("Subject Common Name: %s\n", cert.Subject.CommonName)
-		fmt.Printf("Issuer Name: %s\n", cert.Issuer)
-		fmt.Printf("Issuer Common Name: %s \n", cert.Issuer.CommonName)
-		fmt.Printf("Created: %s \n", cert.NotBefore.Format(time.RFC3339))
-		fmt.Printf("Expiry: %s \n", cert.NotAfter.Format(time.RFC3339))
-		fmt.Printf("DNS Names: %v\n", cert.DNSNames)
-		fmt.Printf("IP Addresses: %v\n", cert.IPAddresses)
-		fmt.Println()
+		tlsutil.PrintCertInfo(cert)
 
 		if outputFile != "" {
 			uniqueFileName := fmt.Sprintf("%s_%d.pem", outputFile, i+1)
